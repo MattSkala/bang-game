@@ -1,0 +1,13 @@
+PROJECT_NAME           = "Bang!"
+OUTPUT_DIRECTORY       = "doc"
+OUTPUT_LANGUAGE        = English
+OPTIMIZE_OUTPUT_FOR_C  = YES
+BUILTIN_STL_SUPPORT    = YES
+INPUT                  = src
+RECURSIVE              = NO
+GENERATE_HTML          = YES
+HTML_OUTPUT            = "."
+GENERATE_LATEX         = NO
+CLASS_DIAGRAMS         = YES
+UML_LOOK               = NO
+INCLUDE_GRAPH          = YES
