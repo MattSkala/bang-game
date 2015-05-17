@@ -3,11 +3,11 @@
 Player::Player() {
 }
 
-void Player::setName(string name) {
+void Player::setName(std::string name) {
     name_ = name;
 }
 
-string Player::getName() const {
+std::string Player::getName() const {
     return name_;
 }
 

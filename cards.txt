@@ -1,0 +1,22 @@
+25 BANG!
+12 Mancato! (Missed!)
+3 Duello (Duel)
+1 Wells Fargo
+2 Diligenza (Stagecoach)
+1 Dinamite (Dynamite)
+1 Appaloosa
+2 Cavallo (Horse)
+1 Saloon
+2 Volcanic [Weapon]
+3 Schofield [Weapon]
+1 Remington [Weapon]
+1 Rev. Carabine [Weapon]
+1 Winchester [Weapon]
+3 Prigione (Jail)
+1 Gatling
+2 Barile (Barrel)
+2 Indiani! (Injuns!)
+4 Maestrina (Mistress)
+4 Panico! (Panic!)
+6 Birra (Beer)
+2 Emporio (General Store)

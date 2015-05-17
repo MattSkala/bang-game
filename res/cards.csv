@@ -1,4 +1,4 @@
-original name;translated name;count;type;life;distance;bang limit;heal;heal others;draw;remove card
+original name;translated name;count;type;life;distance;unlimited bang;heal;heal others;draw;remove card
 Sceriffo;Šerif;1;role;;;;;;;
 Fuorilegge;Bandita;3;role;;;;;;;
 Vice;Pomocník;2;role;;;;;;;
@@ -36,8 +36,8 @@ Appalossa;;1;permanent;;;;;;;
 Barile;Barel;2;permanent;;;;;;;
 Dinamite;Dynamit;1;permanent;;;;;;;
 Prigione;Vězení;3;permanent;;;;;;;
-Volcanic;;2;weapon;;1;-1;;;;
-Schofield;;3;weapon;;2;;;;;
-Remington;;1;weapon;;3;;;;;
-Rev. Carabine;Carabina;1;weapon;;4;;;;;
-Winchester;;1;weapon;;5;;;;;
+Volcanic;;2;gun;;1;1;;;;
+Schofield;;3;gun;;2;0;;;;
+Remington;;1;gun;;3;0;;;;
+Rev. Carabine;Carabina;1;gun;;4;0;;;;
+Winchester;;1;gun;;5;0;;;;

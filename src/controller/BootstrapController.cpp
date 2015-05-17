@@ -1,11 +1,16 @@
 #include <iostream>
+#include <unistd.h>
+#include <thread>
 #include "BootstrapController.h"
+#include "../net/GameServer.h"
+
 
 using namespace std;
 
 
-BootstrapController::BootstrapController(Game & game) : game_(game) { }
-
+BootstrapController::BootstrapController(Game & game, GameClient & client, pid_t & server_pid) : game_(game), client_(client), server_pid_(server_pid) {
+    listener_ = std::bind(&BootstrapController::onStreamEvent, this, std::placeholders::_1);
+}
 
 void BootstrapController::renderWelcome() {
     clearScreen();
@@ -16,80 +21,166 @@ void BootstrapController::renderWelcome() {
 
     while (true) {
         int c = getchar();
-        if (c == 'z' || c == 'Z') {
+        if (toupper(c) == 'Z') {
             actionHostGame();
             break;
-        } else if (c == 'p' || c == 'P') {
+        } else if (toupper(c) == 'P') {
             actionJoinGame();
             break;
         }
     }
 }
 
-
-void BootstrapController::renderNameInput() {
+string BootstrapController::renderNameInput() {
     clearScreen();
     printLogo();
     cout << "Vaše jméno: " << endl;
     string name;
     cin >> name;
 
-    Player * player = new Player();
-    player->setName(name);
-    game_.setMe(player);
+    return name;
 }
-
 
 void BootstrapController::renderPlayersList() {
     clearScreen();
     printLogo();
     cout << "Připojení hráči:" << endl;
     vector<Player *> & players = game_.getPlayers();
-    for (int i = 0; i < players.size(); i++) {
-        cout << "o " << players[i]->getName() << endl;
+    Player * me = game_.getMe();
+    for (unsigned int i = 0; i < players.size(); i++) {
+        if (players[i]->getName() == me->getName()) {
+            cout << "o " << players[i]->getName() << endl;
+        } else {
+            cout << "– " << players[i]->getName() << endl;
+        }
     }
     cout << endl;
-    cout << "Přidat [A]I" << endl;
-    cout << "[S]tart" << endl;
+
+    if (server_pid_) {
+        cout << "Přidat [A]I" << endl;
+        cout << "[S]tart" << endl;
+    } else {
+        cout << "Čekání na spuštění hry..." << endl;
+    }
+}
+
+
+bool BootstrapController::onStreamEvent(vector<string> event) {
+    cout << "stream event:" << event[0] << endl;
+    if (event[0] == "JOIN") {
+        if (game_.getMe()->getName() != event[1]) {
+            Player *player = new Player();
+            player->setName(event[1]);
+            game_.addPlayer(player);
+            renderPlayersList();
+        }
+        return true;
+    } else if (event[0] == "LEAVE") {
+        cout << "LEAVE" << endl;
+        vector<Player*> & players = game_.getPlayers();
+        for (unsigned int i = 0; i < players.size(); i++) {
+            cout << "player:" << players[i]->getName() << "|" << event[1] << endl;
+            cout << "compare:" << players[i]->getName().compare(event[1]) << endl;
+            if (players[i]->getName().compare(event[1]) == 0) {
+                players.erase(players.begin() + i);
+                break;
+            }
+        }
+        renderPlayersList();
+        return true;
+    } else if (event[0] == "START") {
+        started_ = true;
+        return true;
+    }
+
+    return false;
+}
+
+void BootstrapController::renderServerInput() {
+    clearScreen();
+    printLogo();
+    cout << "Zadejte IP adresu serveru:" << endl;
+    string ip;
+    cin >> ip;
+    try {
+        client_.connect(ip, GameServer::PORT);
+    } catch (const char *err) {
+        cout << err << endl;
+        system("read");
+        renderServerInput();
+    }
+}
+
+void BootstrapController::actionHostGame() {
+    if (game_.getMe() == NULL) {
+        string name = renderNameInput();
+        Player * player = new Player();
+        player->setName(name);
+        game_.setMe(player);
+    }
+
+    // Start game server in a child process
+    server_pid_ = fork();
+    if (server_pid_ == 0) {
+        GameServer server = GameServer();
+        server.start();
+        exit(0);
+    }
+
+    // wait for server to start
+    usleep(100 * 1000);
+
+    // connect to server
+    client_.connect("127.0.0.1", GameServer::PORT);
+    client_.join(game_.getMe()->getName());
+    client_.addListener(listener_);
+
+    renderPlayersList();
 
     while (true) {
         int c = getchar();
-        if (c == 'a' || c == 'A') {
+        if (toupper(c) == 'A') {
             actionAddBot();
-            break;
-        } else if (c == 's' || c == 'S') {
+        } else if (toupper(c) == 'S') {
             actionStartGame();
             break;
         }
     }
 }
 
-
-void BootstrapController::actionHostGame() {
-    if (game_.getMe() == NULL) {
-        renderNameInput();
-    }
-
-    // TODO: start a game server
-    renderPlayersList();
-}
-
-
 void BootstrapController::actionAddBot() {
-    Player * player = new Player();
-    player->setName("Bot");
-    game_.addPlayer(player);
-    renderPlayersList();
+    client_.addBot();
 }
-
 
 void BootstrapController::actionJoinGame() {
-    // TODO: discover game servers in LAN
-    renderWelcome();
+    string my_name = renderNameInput();
+    renderServerInput();
+    client_.join(my_name);
+    client_.addListener(listener_);
+
+    vector<string> names = client_.getPlayers();
+    for (string name : names) {
+        if (my_name == name) {
+            Player * me = new Player();
+            me->setName(my_name);
+            game_.setMe(me);
+            continue;
+        }
+        Player *player = new Player();
+        player->setName(name);
+        game_.addPlayer(player);
+    }
+
+    renderPlayersList();
+
+    while (!started_) {
+        sleep(1);
+    }
 }
 
-
 void BootstrapController::actionStartGame() {
+    client_.removeListener(listener_);
+
     // TODO: transfer control to GameController
     renderPlayersList();
 }

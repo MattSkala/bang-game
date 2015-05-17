@@ -1,19 +1,19 @@
 #ifndef BANG_PLAYER_H
 #define BANG_PLAYER_H
 
+
 #include <string>
 
-using namespace std;
 
 class Player {
 private:
     int max_life_;
     int life_;
-    string name_;
+    std::string name_;
 public:
     Player();
-    void setName(string name);
-    string getName() const;
+    void setName(std::string name);
+    std::string getName() const;
     /**
      * Decreases life points by one.
      */

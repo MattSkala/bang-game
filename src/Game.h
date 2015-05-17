@@ -1,12 +1,12 @@
-#include <vector>
-#include "Player.h"
-#include "Card.h"
-
-using namespace std;
-
-
 #ifndef BANG_GAME_H
 #define BANG_GAME_H
+
+#include <vector>
+#include <memory>
+#include "entity/Player.h"
+#include "entity/Card.h"
+#include "entity/CharacterCard.h"
+#include "entity/RoleCard.h"
 
 
 /**
@@ -14,12 +14,16 @@ using namespace std;
  */
 class Game {
 private:
-    vector<Card *> pack_;
+    vector<shared_ptr<RoleCard>> roles_;
+    vector<shared_ptr<CharacterCard>> characters_;
+    vector<shared_ptr<Card>> pack_;
     vector<Player *> players_;
     int player_on_turn_;
     Player * me_;
 public:
     Game();
+
+    ~Game();
 
     /**
      * Sets current player and adds her to players list.

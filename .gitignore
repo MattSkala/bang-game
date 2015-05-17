@@ -1,0 +1,4 @@
+*.out
+skalamat
+*.dSYM
+CMakeLists.txt

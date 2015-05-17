@@ -3,19 +3,24 @@
 
 
 #include "Game.h"
+#include "net/GameClient.h"
+#include "unistd.h"
 
 /**
- * An application instance that handles user flow.
+ * An application instance that handles user flow and stores app state.
  * @author Matouš Skála
  */
 class Application {
 private:
     Game game_;
+    GameClient client_;
+    pid_t server_pid_ = 0;
 public:
+    ~Application();
     /**
      * Initializes the application and shows welcome screen.
      */
-    void init();
+    void init(string filename);
 };
 
 
