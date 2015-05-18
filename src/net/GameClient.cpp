@@ -151,16 +151,30 @@ bool GameClient::removeListener(function<bool(vector<string>)> f) {
 bool GameClient::join(string username) {
     sendRequest("JOIN|" + username);
     string res;
-    receiveResponse(res);
-    return res == "OK";
+    return receiveResponse(res) && res == "OK";
 }
 
-void GameClient::addBot() {
+bool GameClient::addBot() {
     sendRequest("ADD_BOT");
+    string res;
+    return receiveResponse(res) && res == "OK";
 }
 
 vector<string> GameClient::getPlayers() {
     sendRequest("GET_PLAYERS");
+    string res;
+    receiveResponse(res);
+    return explode(res, ';');
+}
+
+bool GameClient::startGame() {
+    sendRequest("START");
+    string res;
+    return receiveResponse(res) && res == "OK";
+}
+
+vector<string> GameClient::getCards() {
+    sendRequest("GET_CARDS");
     string res;
     receiveResponse(res);
     return explode(res, ';');

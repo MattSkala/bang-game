@@ -6,10 +6,7 @@
 #include "net/GameClient.h"
 #include "unistd.h"
 
-/**
- * An application instance that handles user flow and stores app state.
- * @author Matouš Skála
- */
+/// An application instance that handles user flow and stores app state.
 class Application {
 private:
     Game game_;

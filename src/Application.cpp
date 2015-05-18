@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "controller/BootstrapController.h"
+#include "controller/GameController.h"
 #include "util/CardsParser.h"
 #include "signal.h"
 
@@ -17,4 +18,5 @@ void Application::init(string filename) {
 
     // Render welcome screen
     BootstrapController(game_, client_, server_pid_).renderWelcome();
+    GameController(game_, client_).actionInit();
 }

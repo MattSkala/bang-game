@@ -4,9 +4,8 @@
 
 #include "../entity/Card.h"
 
-/**
- * A helper class for reading cards configuration from CSV file.
- */
+
+/// A helper class for reading cards configuration from CSV file.
 class CardsParser {
 private:
     static const int COL_ORIGINAL_NAME = 0;

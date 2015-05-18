@@ -1,14 +1,8 @@
-//
-// Created by Matouš Skála on 26.04.15.
-//
-
 #ifndef BANG_CONTROLLER_H
 #define BANG_CONTROLLER_H
 
 
-/**
- * An abstract controller.
- */
+/// An abstract controller.
 class Controller {
 protected:
     /**

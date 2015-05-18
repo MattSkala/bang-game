@@ -18,6 +18,10 @@
 
 #define BUFFER_SIZE 1024
 
+const string GameServer::SUCCESS_RESPONSE = "OK";
+
+GameServer::GameServer(Game &game) : game_(game) { }
+
 GameServer::~GameServer() {
     stop();
 }
@@ -198,7 +202,7 @@ string GameServer::processRequest(string req, int connection) {
         players_[socket] = player;
         sendEvent("JOIN|" + req_parts[1]);
         res = "OK";
-    } else if (req == "GET_PLAYERS") {
+    } else if ("GET_PLAYERS" == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
         for (unsigned int i = 0; i < players.size(); i++) {
@@ -207,9 +211,28 @@ string GameServer::processRequest(string req, int connection) {
                 res += ';';
             }
         }
-    } else if (req == "SUBSCRIBE") {
+    } else if ("SUBSCRIBE" == req) {
         stream_connections_.push_back(connections_[connection]);
         res = "OK";
+    } else if ("START" == req) {
+        game_.assignRoles();
+        game_.assignCharacters();
+        game_.assignCards();
+        // TODO: check assigned cards
+        sendEvent("START");
+        res = "OK";
+    } else if ("GET_CARDS" == req) {
+        int socket = connections_[connection];
+        Player *player = players_[socket];
+        vector<shared_ptr<Card>> cards = player->getCards();
+        res = "";
+        for (unsigned int i = 0; i < cards.size(); i++) {
+            res += cards[i]->getOriginalName();
+            if (i < cards.size() - 1) {
+                res += ";";
+            }
+        }
+        // TODO: check why someone has no cards
     } else if (req == "PING") {
         res = "PONG";
     } else {

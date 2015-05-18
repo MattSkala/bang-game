@@ -1,0 +1,21 @@
+The build process of the app is managed by Makefile.
+
+First compile the app by:
+
+    make compile
+
+Then you can run the app with:
+
+    make run
+
+Generate the source code documentation in HTML format into "doc" folder:
+
+    make doc
+
+Run the tests:
+
+    make test
+
+Remove all previously generated files:
+
+    make clean

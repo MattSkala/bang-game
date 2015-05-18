@@ -2,7 +2,7 @@
 #include "CsvParser.h"
 
 
-vector< vector<string> > CsvParser::parseFile(string filename, bool ignore_first_line) {
+vector<vector<string>> CsvParser::parseFile(string filename, bool ignore_first_line) {
     vector<vector<string> > data;
 
     // open file

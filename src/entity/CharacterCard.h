@@ -5,6 +5,7 @@
 #include "Card.h"
 
 
+/// A player character card. It is assigned to each player at the start of the game.
 class CharacterCard : public Card {
 private:
     int life_;

@@ -9,9 +9,8 @@
 
 using namespace std;
 
-/**
- * A controller for welcome screen, creating a game and connecting players to it.
- */
+
+/// A controller for welcome screen, creating a game and connecting players to it.
 class BootstrapController : public Controller {
 private:
     Game & game_;

@@ -112,19 +112,19 @@ void BootstrapController::renderServerInput() {
 }
 
 void BootstrapController::actionHostGame() {
+    // Start game server in a child process
+    server_pid_ = fork();
+    if (server_pid_ == 0) {
+        GameServer server = GameServer(game_);
+        server.start();
+        exit(0);
+    }
+
     if (game_.getMe() == NULL) {
         string name = renderNameInput();
         Player * player = new Player();
         player->setName(name);
         game_.setMe(player);
-    }
-
-    // Start game server in a child process
-    server_pid_ = fork();
-    if (server_pid_ == 0) {
-        GameServer server = GameServer();
-        server.start();
-        exit(0);
     }
 
     // wait for server to start
@@ -179,8 +179,11 @@ void BootstrapController::actionJoinGame() {
 }
 
 void BootstrapController::actionStartGame() {
-    client_.removeListener(listener_);
+    while (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
+        cout << "Pro spuštění hry je potřeba " << GameServer::MIN_PLAYERS << " – " << GameServer::MAX_PLAYERS << " hráčů." << endl;
+        system("read");
+    }
 
-    // TODO: transfer control to GameController
-    renderPlayersList();
+    client_.removeListener(listener_);
+    client_.startGame();
 }

@@ -5,6 +5,7 @@
 #include "Card.h"
 
 
+/// A gun card
 class GunCard : public Card {
 private:
     int distance_;

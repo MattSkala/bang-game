@@ -1,0 +1,10 @@
+Bang! 1.0
+--------
+
+Bang! card game with LAN multiplayer and AI implemented in C++.
+
+This is a free software. You can redestribute it under the terms of the MIT License – see LICENSE.
+
+For instructions how to run this, see INSTALL.
+
+Report bugs to the author – Matouš Skála <skalamat@fit.cvut.cz>.

@@ -2,33 +2,46 @@
 #define BANG_GAMESERVER_H
 
 
-#include "../Game.h"
 #include <map>
+#include "../Game.h"
 
+
+/// A game server which runs on host computer in a separate process.
 /**
- * Requests:
- * SUBSCRIBE // subscribes to stream events updates
- * JOIN|username -> OK // joins the game with given username
- * ADD_BOT -> OK // adds bot player
- * GET_PLAYERS -> username1;username2;... // returns a semicolon-separated list of connected players
- * GET_CARDS -> originalname1;originalname2;... // returns a semicolon-separated list of cards in hand
- * PLAY_CARD|originalname[|options...] -> OK // plays a card with optional options (e. g. target player)
- * DRAW_CARD -> originalname // draws a card from pack
- * FINISH_ROUND -> OK // finishes current round
+ * \section API
  *
- * Stream Events:
- * JOIN|username // user joined the game
- * LEAVE|username // user left the game
- * START // the game was started by the host
- * NEXT_ROUND|username // the player starts his round
- * PLAY_CARD|username|originalname[|options...] // the card was player by user
+ * Request | Response | Action
+ * ------- | -------- | ------
+ * SUBSCRIBE | OK | Subscribes to stream events updates.
+ * JOIN\|username | OK | Joins the game with given username.
+ * ADD_BOT | OK | Adds a bot player.
+ * GET_PLAYERS | username1;username2;... | Returns a list of connected players.
+ * START | OK | Starts the game.
+ * GET_CARDS | originalname1;originalname2;... | Returns a list of cards in hand.
+ * PLAY_CARD\|originalname[\|options...] | OK | Plays a card with optional options (e. g. target player).
+ * DRAW_CARD | originalname | Draws a card from pack.
+ * FINISH_ROUND | OK | Finishes current round.
+ *
+ *
+ * \section Stream Events
+ *
+ * Players can be notified about game state changes by events.
+ * They are being sent through stream socket when client subscribes with SUBSCRIBE request.
+ *
+ * Event | Description
+ * ----- | -----------
+ * JOIN\|username | A player joined the game.
+ * LEAVE\|username | The player left the game.
+ * START | The game was started by the host.
+ * NEXT_ROUND\|username | The player starts his round.
+ * PLAY_CARD\|username\|originalname[\|options...] | The card was played.
  */
 class GameServer {
 private:
     /**
      * Game state.
      */
-    Game game_;
+    Game & game_;
 
     /**
      * True if the server is running.
@@ -64,11 +77,17 @@ private:
      * Returns socket descriptor for provided address.
      */
     int getSocket(struct addrinfo * servinfo);
+
     void waitForConnection();
+
     void acceptNewConnection();
+
     bool receiveRequest(int client_socket, string & req);
+
     string processRequest(string req, int connection);
+
     void sendResponse(int client_socket, string res);
+
     void handleUserLeave(vector<int>::iterator it);
 
     /**
@@ -76,6 +95,8 @@ private:
      */
     void sendEvent(string event);
 public:
+    GameServer(Game & game);
+
     ~GameServer();
 
     /**
@@ -84,19 +105,28 @@ public:
     static const int PORT = 7769;
 
     /**
+     * Min count of players that should be connected before starting a game.
+     */
+    static const int MIN_PLAYERS = 2;
+
+    /**
      * Max count of players that are able to join the game.
      */
     static const int MAX_PLAYERS = 7;
 
     /**
-     * Starts the game server. It should be called in a separate process as it starts a blocking loop.
+     * The response that is returned by server on response-less request.
+     */
+    static const string SUCCESS_RESPONSE;
+
+    /// Starts the game server.
+    /**
+     * It should be called in a separate process as it starts a blocking loop.
      * The server listens on port GameServer::PORT and automatically accepts incoming connections.
      */
     void start();
 
-    /**
-     * Stops the game server.
-     */
+    /// Stops the game server.
     void stop();
 };
 
