@@ -3,6 +3,7 @@
 bang - A card game with LAN multiplayer and AI implemented in C++
 .SH SYNOPSIS
 .B bang
+[-s]
 [-h \fIhost\fR]
 [-p \fIport\fR]
 .I filename
@@ -14,19 +15,22 @@ Bang! is a Wild West-themed card game, designed by Emiliano Sciarra and released
 
 This C++ implementation is inspired by the original game rules, but it is a little bit simplified.
 
-The architecture is based on a client-server model. When a user hosts a game, GameServer is started as a separate process on his computer. Then all the users (even the host himself) are connecting with GameClient to that server via TCP stream sockets. Each client keeps 2 opened connections – one for synchronous two-way communication (API) and the other one for game state change events from the server. The port on which server is running must be accessible by other players' computers.
+The architecture is based on a client-server model. When a user hosts a game, GameServer is started as a separate process on his computer. Then all the users (even the host himself) are connecting with GameClient to that server via TCP stream sockets. Each client keeps 2 opened connections - one for synchronous two-way communication (API) and the other one for game state change events from the server. The port on which server is running must be accessible by other players' computers.
 .SH OPTIONS
 .TP 12
 .B --help
 Displays help end exits
 .TP
+.B -s
+Runs only the game server without UI
+.TP
 .B -h \fIhost\R
 
-Specifies game server IP address
+Specifies the game server IP address
 .TP
 .B -p \fIport\R
 
-Specifies game server port number (default port is 7777)
+Specifies the game server port number (default port is 7777)
 .SH EXAMPLES
 .TP 4
 .B bang res/cards.csv
@@ -35,8 +39,8 @@ Runs the game with cards definitions in res/cards.csv file
 .B bang -h 109.75.149.40 -p 1234 res/cards.csv
 Runs the game with cards definitions in res/cards.csv file and server on 109.75.149.40:1234
 .TP
-.B bang --help
-Displays help and exits
+.B bang -s -p 1234
+Runs the game server on port 1234
 .SH "SEE ALSO"
 For further developer documentation, generate HTML documentation by running
 .I make doc

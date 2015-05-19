@@ -18,7 +18,7 @@
 
 #define BUFFER_SIZE 1024
 
-const string GameServer::SUCCESS_RESPONSE = "OK";
+const string GameServer::SUCCESS = "OK";
 
 GameServer::GameServer(Game &game) : game_(game) { }
 
@@ -190,37 +190,61 @@ bool GameServer::receiveRequest(int client_socket, string & req) {
 
 string GameServer::processRequest(string req, int connection) {
     string res;
+    int socket = connections_[connection];
+    Player * player = players_[socket];
 
     vector<string> req_parts = explode(req, '|');
 
     if ("JOIN" == req_parts[0]) {
         // add user
-        Player *player = new Player();
+        player = new Player();
         player->setName(req_parts[1]);
         game_.addPlayer(player);
-        int socket = connections_[connection];
         players_[socket] = player;
         sendEvent("JOIN|" + req_parts[1]);
-        res = "OK";
+        res = GameServer::SUCCESS;
     } else if ("GET_PLAYERS" == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
         for (unsigned int i = 0; i < players.size(); i++) {
             res += players[i]->getName();
+
+            if (i < players.size() - 1) {
+                res += ';';
+            }
+        }
+    } else if ("GET_PLAYERS_INFO" == req) {
+        res = "";
+        vector<Player *> players = game_.getPlayers();
+        for (unsigned int i = 0; i < players.size(); i++) {
+            res += players[i]->getName();
+            res += ',';
+            res += to_string(players[i]->getLife());
+            res += ',';
+            res += players[i]->getCharacter()->getOriginalName();
+            res += ',';
+            if (players[i]->getRole()->getOriginalName() == RoleCard::SHERIFF
+                || !players[i]->isAlive()
+                || player->getName() == players[i]->getName()) {
+                res += players[i]->getRole()->getOriginalName();
+            } else {
+                res += '?';
+            }
+            res += ',';
+            res += to_string(game_.getPlayerOnTurn()->getName() == players[i]->getName());
+
             if (i < players.size() - 1) {
                 res += ';';
             }
         }
     } else if ("SUBSCRIBE" == req) {
         stream_connections_.push_back(connections_[connection]);
-        res = "OK";
+        res = GameServer::SUCCESS;
     } else if ("START" == req) {
-        game_.assignRoles();
-        game_.assignCharacters();
-        game_.assignCards();
-        // TODO: check assigned cards
+        game_.initGame();
+        game_.drawCards(game_.getPlayerOnTurn());
         sendEvent("START");
-        res = "OK";
+        res = GameServer::SUCCESS;
     } else if ("GET_CARDS" == req) {
         int socket = connections_[connection];
         Player *player = players_[socket];
@@ -233,8 +257,6 @@ string GameServer::processRequest(string req, int connection) {
             }
         }
         // TODO: check why someone has no cards
-    } else if (req == "PING") {
-        res = "PONG";
     } else {
         res = "INVALID_REQUEST";
     }
@@ -252,7 +274,7 @@ void GameServer::sendResponse(int client_socket, string res) {
 
 void GameServer::sendEvent(string event) {
     for (unsigned int i = 0; i < stream_connections_.size(); i++) {
-        sendResponse(stream_connections_[i], event);
+        sendResponse(stream_connections_[i], event + '$');
     }
 }
 

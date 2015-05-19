@@ -18,8 +18,38 @@ private:
     vector<shared_ptr<Card>> cards_;
     list<shared_ptr<Card>> pack_;
     vector<Player *> players_;
-    int player_on_turn_;
+    Player * player_on_turn_;
     Player * me_;
+
+    /**
+     * Assigns roles to players.
+     */
+    void assignRoles();
+
+    /**
+     * Assigns characters to players.
+     */
+    void assignCharacters();
+
+    /**
+     * Assigns cards to players.
+     */
+    void assignCards();
+
+    /**
+     * Sets players default life points to max value.
+     */
+    void setLifePoints();
+
+    /**
+     * Finds a player by name.
+     */
+    Player * getPlayer(string name);
+
+    /**
+     * Finds a card by name.
+     */
+    shared_ptr<Card> getCard(string name);
 public:
     Game();
 
@@ -51,24 +81,35 @@ public:
     void setPack(vector<Card *> cards);
 
     /**
-     * Assigns roles to players.
+     * Initializes the game. Should be called by server.
      */
-    void assignRoles();
-
-    /**
-     * Assigns characters to players.
-     */
-    void assignCharacters();
-
-    /**
-     * Assigns cards to players.
-     */
-    void assignCards();
+    void initGame();
 
     /**
      * Finds cards in pack by their original names.
      */
     vector<shared_ptr<Card>> getCardsByNames(vector<string> names) const;
+
+    /**
+     * Gets player on turn.
+     */
+    Player * getPlayerOnTurn();
+
+    /**
+     * Updates player info. Should be called by client when received updated info from server.
+     */
+    bool updatePlayer(string name, int life, string character, string role, bool on_turn);
+
+    /**
+     * A player draws a card.
+     */
+    void drawCard(Player * player);
+
+    /**
+     * Draws two cards at the beginning phase of the round.
+     * \return True on success, false if player cannot draw cards.
+     */
+    bool drawCards(Player * player);
 
     /**
      * Plays a card.

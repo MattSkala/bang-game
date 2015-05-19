@@ -66,7 +66,6 @@ void BootstrapController::renderPlayersList() {
 
 
 bool BootstrapController::onStreamEvent(vector<string> event) {
-    cout << "stream event:" << event[0] << endl;
     if (event[0] == "JOIN") {
         if (game_.getMe()->getName() != event[1]) {
             Player *player = new Player();
@@ -79,8 +78,6 @@ bool BootstrapController::onStreamEvent(vector<string> event) {
         cout << "LEAVE" << endl;
         vector<Player*> & players = game_.getPlayers();
         for (unsigned int i = 0; i < players.size(); i++) {
-            cout << "player:" << players[i]->getName() << "|" << event[1] << endl;
-            cout << "compare:" << players[i]->getName().compare(event[1]) << endl;
             if (players[i]->getName().compare(event[1]) == 0) {
                 players.erase(players.begin() + i);
                 break;
@@ -179,9 +176,11 @@ void BootstrapController::actionJoinGame() {
 }
 
 void BootstrapController::actionStartGame() {
-    while (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
+    if (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
         cout << "Pro spuštění hry je potřeba " << GameServer::MIN_PLAYERS << " – " << GameServer::MAX_PLAYERS << " hráčů." << endl;
-        system("read");
+        while (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
+            getchar();
+        }
     }
 
     client_.removeListener(listener_);

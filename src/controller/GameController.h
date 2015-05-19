@@ -9,6 +9,11 @@
 class GameController : public Controller {
     Game & game_;
     GameClient & client_;
+    function<bool(vector<string>)> listener_;
+    bool on_turn_ = false;
+    bool onStreamEvent(vector<string> event);
+
+    void updatePlayersInfo();
 public:
     GameController(Game & game, GameClient & client);
 

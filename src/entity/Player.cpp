@@ -1,4 +1,7 @@
+#include <iostream>
 #include "Player.h"
+
+using namespace std;
 
 Player::Player() {
 }
@@ -43,6 +46,10 @@ int Player::getLife() const {
     return life_;
 }
 
+bool Player::isAlive() const {
+    return life_ > 0;
+}
+
 void Player::decreaseLife() {
     if (life_ > 0) {
         life_--;
@@ -50,9 +57,21 @@ void Player::decreaseLife() {
 }
 
 bool Player::increaseLife() {
-    if (max_life_ == life_) {
+    if (getMaxLife() == life_) {
         return false;
     }
     life_++;
     return true;
+}
+
+void Player::setLife(int life) {
+    life_ = life;
+}
+
+int Player::getMaxLife() const {
+    int life = character_->getLife();
+    if (role_->getOriginalName() == RoleCard::SHERIFF) {
+        life++;
+    }
+    return life;
 }

@@ -8,7 +8,8 @@ void testGameServer() {
     int pid = fork();
     if (pid == 0) {
         try {
-            GameServer server;
+            Game game;
+            GameServer server(game);
             server.start();
         } catch (const char *err) {
             cout << "server error:" << err << endl;
@@ -21,14 +22,7 @@ void testGameServer() {
 
     try {
         GameClient client;
-        client.connectApi("127.0.0.1", GameServer::PORT);
-
-        // PING
-        client.sendRequest("PING");
-        string res;
-        bool status = client.receiveResponse(res);
-        assert(status);
-        assert(res == "PONG");
+        client.connect("127.0.0.1", GameServer::PORT);
 
         // GET_PLAYERS
         client.join("Matt");

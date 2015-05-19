@@ -16,6 +16,7 @@
  * JOIN\|username | OK | Joins the game with given username.
  * ADD_BOT | OK | Adds a bot player.
  * GET_PLAYERS | username1;username2;... | Returns a list of connected players.
+ * GET_PLAYERS_INFO | username,life,character,role,on_turn;... | Returns a list of players with game info.
  * START | OK | Starts the game.
  * GET_CARDS | originalname1;originalname2;... | Returns a list of cards in hand.
  * PLAY_CARD\|originalname[\|options...] | OK | Plays a card with optional options (e. g. target player).
@@ -102,7 +103,7 @@ public:
     /**
      * The port server is listening on.
      */
-    static const int PORT = 7769;
+    static const int PORT = 7768;
 
     /**
      * Min count of players that should be connected before starting a game.
@@ -117,7 +118,7 @@ public:
     /**
      * The response that is returned by server on response-less request.
      */
-    static const string SUCCESS_RESPONSE;
+    static const string SUCCESS;
 
     /// Starts the game server.
     /**

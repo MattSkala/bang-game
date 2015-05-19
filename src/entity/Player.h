@@ -12,11 +12,10 @@
 /// A player entity storing cards on hand, a role, a character and life points.
 class Player {
 private:
-    int max_life_;
     int life_ = 0;
     std::string name_;
     RoleCard * role_ = NULL;
-    CharacterCard * character_;
+    CharacterCard * character_ = NULL;
     vector<shared_ptr<Card>> cards_;
 public:
     Player();
@@ -81,6 +80,21 @@ public:
      * Returns current life points count.
      */
     int getLife() const;
+
+    /**
+     * Sets current life points count.
+     */
+    void setLife(int life);
+
+    /**
+     * Returns maximum life points computed from role and character.
+     */
+    int getMaxLife() const;
+
+    /**
+     * Checks whether the player is alive (life points > 0).
+     */
+    bool isAlive() const;
 };
 
 

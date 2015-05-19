@@ -7,13 +7,13 @@
 #include <sstream>
 #include "GameClient.h"
 #include "../util/utils.h"
+#include "GameServer.h"
 
 using namespace std;
 
 #define BUFFER_SIZE 1024
 
 GameClient::GameClient() {
-    main_thread_id_ = this_thread::get_id();
 }
 
 GameClient::~GameClient() {
@@ -64,10 +64,19 @@ void GameClient::connect(string host, int port) {
 }
 
 void GameClient::disconnect() {
-    close(api_socket_);
-    close(stream_socket_);
+    int api_socket = api_socket_;
+    int stream_socket = stream_socket_;
     api_socket_ = 0;
     stream_socket_ = 0;
+    close(api_socket);
+    close(stream_socket);
+    if (stream_thread_.joinable()) {
+        stream_thread_.join();
+    }
+}
+
+bool GameClient::isConnected() {
+    return api_socket_ > 0 || stream_socket_ > 0;
 }
 
 void GameClient::sendRequest(string req, int socket) {
@@ -83,8 +92,12 @@ bool GameClient::receiveResponse(string & res, int socket) {
     int received = 0;
 
     if ((received = recv(socket, buffer, BUFFER_SIZE, 0)) == -1) {
-        perror(strerror(errno));
-        throw "recv error";
+        if (isConnected()) {
+            perror(strerror(errno));
+            throw "recv error";
+        } else {
+            return false;
+        }
     }
 
     if (received == 0) {
@@ -97,7 +110,8 @@ bool GameClient::receiveResponse(string & res, int socket) {
 }
 
 bool GameClient::receiveResponse(string &res) {
-    return receiveResponse(res, api_socket_);
+    bool status = receiveResponse(res, api_socket_);
+    return status;
 }
 
 void GameClient::stream(string host, int port) {
@@ -106,7 +120,8 @@ void GameClient::stream(string host, int port) {
         sendRequest("SUBSCRIBE", stream_socket_);
         string res;
         bool status = receiveResponse(res, stream_socket_);
-        if (!status || res != "OK") {
+
+        if (!status || res != GameServer::SUCCESS) {
             throw "stream subscription failed";
         }
 
@@ -117,12 +132,10 @@ void GameClient::stream(string host, int port) {
                 throw "disconnect";
             }
 
-            vector<string> parts = explode(res, '|');
+            vector<string> events = explode(res, '$');
+            for (unsigned int i = 0; i < events.size(); i++) {
+                vector<string> parts = explode(events[i], '|');
 
-            if (this_thread::get_id() == main_thread_id_) {
-                last_response_ = res;
-                stream_thread_.detach();
-            } else {
                 // notify listeners
                 for (unsigned int i = 0; i < listeners_.size(); i++) {
                     listeners_[i](parts);
@@ -130,7 +143,9 @@ void GameClient::stream(string host, int port) {
             }
         }
     } catch (const char *err) {
-        cerr << "stream error:" << err << endl;
+        if (isConnected()) {
+            cerr << "stream error:" << err << endl;
+        }
     }
 }
 
@@ -151,13 +166,13 @@ bool GameClient::removeListener(function<bool(vector<string>)> f) {
 bool GameClient::join(string username) {
     sendRequest("JOIN|" + username);
     string res;
-    return receiveResponse(res) && res == "OK";
+    return receiveResponse(res) && res == GameServer::SUCCESS;
 }
 
 bool GameClient::addBot() {
     sendRequest("ADD_BOT");
     string res;
-    return receiveResponse(res) && res == "OK";
+    return receiveResponse(res) && res == GameServer::SUCCESS;
 }
 
 vector<string> GameClient::getPlayers() {
@@ -167,10 +182,23 @@ vector<string> GameClient::getPlayers() {
     return explode(res, ';');
 }
 
+vector<vector<string>> GameClient::getPlayersInfo() {
+    sendRequest("GET_PLAYERS_INFO");
+    string res;
+    receiveResponse(res);
+    vector<string> users = explode(res, ';');
+    vector<vector<string>> players;
+    for (string user : users) {
+        vector<string> info = explode(user, ',');
+        players.push_back(info);
+    }
+    return players;
+}
+
 bool GameClient::startGame() {
     sendRequest("START");
     string res;
-    return receiveResponse(res) && res == "OK";
+    return receiveResponse(res) && res == GameServer::SUCCESS;
 }
 
 vector<string> GameClient::getCards() {

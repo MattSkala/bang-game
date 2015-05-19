@@ -12,10 +12,10 @@ class Game;
 /// An abstract card entity.
 class Card {
 protected:
-    /// The original name of card.
+    /// The original name of the card.
     string original_name_;
 
-    /// The translated name of card.
+    /// The translated name of the card.
     string name_;
 
     /// The number of cards in a pack.

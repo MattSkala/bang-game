@@ -1,11 +1,13 @@
+#ifndef BANG_GAMECLIENT_H
+#define BANG_GAMECLIENT_H
+
+
 #include <string>
 #include <thread>
 #include <vector>
+#include "../entity/Player.h"
 
 using namespace std;
-
-#ifndef BANG_GAMECLIENT_H
-#define BANG_GAMECLIENT_H
 
 
 /// A game client for communication with GameServer.
@@ -15,8 +17,6 @@ private:
     int api_socket_;
     vector<function<bool(vector<string>)>> listeners_;
     thread stream_thread_;
-    thread::id main_thread_id_;
-    string last_response_;
 
     /**
      * Opens new socket and connects to server on provided port.
@@ -68,10 +68,10 @@ public:
     /// Disconnects from the game server.
     void disconnect();
 
+    /// Checks whether there is an open socket connected to the server.
+    bool isConnected();
+
     /// Adds a listener to be notified about changes in game state.
-    /**
-     * \param f A listener to be notified about game state changes.
-     */
     void addListener(function<bool(vector<string>)> f);
 
     /// Removes a listener.
@@ -94,18 +94,18 @@ public:
     bool addBot();
 
     /// Gets a list of connected players.
-    /**
-     * \return A list of connected players.
-     */
     vector<string> getPlayers();
+
+    /// Gets a list of players with game info.
+    /**
+     * \return A vector of vectors containing players information (username, life points, character, role, on turn).
+     */
+    vector<vector<string>> getPlayersInfo();
 
     /// Starts the game.
     bool startGame();
 
     /// Gets a list of cards in hand.
-    /**
-     * \return A list of cards in hand.
-     */
     vector<string> getCards();
 
     ///@}

@@ -18,6 +18,7 @@ private:
     pid_t & server_pid_;
     function<bool(vector<string>)> listener_;
     bool started_ = false;
+    bool onStreamEvent(vector<string> event);
 public:
     BootstrapController(Game & game, GameClient & client, pid_t & server_pid);
     void renderWelcome();
@@ -28,7 +29,6 @@ public:
     void actionAddBot();
     void actionJoinGame();
     void actionStartGame();
-    bool onStreamEvent(vector<string> event);
 };
 
 
