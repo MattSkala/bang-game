@@ -24,6 +24,7 @@ private:
     static const int COL_TARGET_DISTANCE = 13;
     static const int COL_TARGET_SELF = 14;
     static const int COL_SPECIAL = 15;
+    static const int COL_UNLIMITED_BANG = 16;
     Card * createCard(vector<string> row);
 public:
     vector<Card *> parseFile(string filename);

@@ -172,6 +172,42 @@ Player * Game::getPlayerOnTurn() {
     return player_on_turn_;
 }
 
+
+int Game::getPlayerPosition(Player *player) const {
+    int position = 0;
+    for (unsigned int i = 0; i < players_.size(); i++) {
+        if (players_[i] == player) {
+            position = i;
+            break;
+        }
+    }
+    return position;
+}
+
+int Game::getDistance(Player *player, int target) const {
+    int position = getPlayerPosition(player);
+    int d1 = abs(position - target);
+    int d2;
+    if (position > target) {
+        d2 = (int) players_.size() - position + target;
+    } else {
+        d2 = (int) players_.size() + position - target;
+    }
+    int d = d1 < d2 ? d1 : d2;
+
+    // Appaloosa
+    d += player->getDistanceFrom();
+
+    // Mustang
+    d += players_[target]->getDistanceTo();
+
+    if (d < 1) {
+        d = 1;
+    }
+
+    return d;
+}
+
 Player * Game::getPlayer(string name) {
     for (Player *player : players_) {
         if (player->getName() == name) {
@@ -216,6 +252,22 @@ bool Game::updatePlayer(string name, unsigned int life, string character, string
     return true;
 }
 
+bool Game::updatePermanentCards(string name, vector<string> card_names) {
+    Player * player = getPlayer(name);
+    if (player == NULL) {
+        return false;
+    }
+
+    vector<shared_ptr<PermanentCard>> cards;
+    for (string card_name : card_names) {
+        shared_ptr<PermanentCard> card = dynamic_pointer_cast<PermanentCard>(getCard(card_name));
+        cards.push_back(card);
+    }
+
+    player->setPermanentCards(cards);
+    return true;
+}
+
 void Game::drawCard(Player *player) {
     player->addCard(pack_.front());
     pack_.pop_front();
@@ -238,6 +290,10 @@ bool Game::playCard(Player *player, int position, int target) {
 }
 
 void Game::finishRound() {
+    for (Player * player : players_) {
+        player->setPlayedBang(false);
+    }
+
     if (players_.back() == player_on_turn_) {
         player_on_turn_ = players_.front();
     } else {

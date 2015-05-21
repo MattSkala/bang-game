@@ -80,7 +80,6 @@ bool GameClient::isConnected() {
 }
 
 void GameClient::sendRequest(string req, int socket) {
-    cout << "sendRequest:" << req << endl;
     send(socket, req.c_str(), req.size(), 0);
 }
 
@@ -110,8 +109,6 @@ bool GameClient::receiveResponse(string & res, int socket) {
     }
 
     res = string(buffer, received);
-
-    cout << "receiveResponse:" << res << endl;
 
     return true;
 }
@@ -184,7 +181,6 @@ vector<string> GameClient::getPlayers() {
 vector<vector<string>> GameClient::getPlayersInfo() {
     string res;
     sendRequest("GET_PLAYERS_INFO", res);
-    cout << res << endl;
     vector<string> users = explode(res, ';');
     vector<vector<string>> players;
     for (string user : users) {
@@ -203,6 +199,23 @@ vector<string> GameClient::getCards() {
     string res;
     sendRequest("GET_CARDS", res);
     return explode(res, ';');
+}
+
+map<string, vector<string>> GameClient::getPermanentCards() {
+    map<string, vector<string>> players;
+    string res;
+    sendRequest("GET_PERMANENT_CARDS", res);
+    vector<string> players_list = explode(res, ';');
+    for (string player : players_list) {
+        vector<string> player_parts = explode(player, ':');
+        string name = player_parts[0];
+        vector<string> cards;
+        if (player_parts.size() == 2) {
+            cards = explode(player_parts[1], ',');
+        }
+        players[name] = cards;
+    }
+    return players;
 }
 
 bool GameClient::finishRound() {

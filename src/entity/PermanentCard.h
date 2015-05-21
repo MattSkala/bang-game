@@ -7,9 +7,13 @@
 
 /// A playable card which can be laid on table and has a permanent effect until it is removed.
 class PermanentCard : public PlayableCard {
+private:
+    int distance_tweak_ = 0;
 public:
     PermanentCard(string original_name, string name, int count);
     virtual bool play(Game * game, Player * player, int position, int target);
+    int getDistanceTweak() const;
+    void setDistanceTweak(int distance);
 };
 
 

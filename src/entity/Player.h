@@ -8,6 +8,7 @@
 #include "RoleCard.h"
 #include "CharacterCard.h"
 #include "PlayableCard.h"
+#include "PermanentCard.h"
 
 
 /// A player entity storing cards on hand, a role, a character and life points.
@@ -17,8 +18,22 @@ private:
     std::string name_;
     RoleCard * role_ = NULL;
     CharacterCard * character_ = NULL;
+    /**
+     * Cards in hand.
+     */
     vector<shared_ptr<PlayableCard>> cards_;
+    /**
+     * Cards laid on table.
+     */
+    vector<shared_ptr<PermanentCard>> permanents_;
+    /**
+     * A player should reply to pending card.
+     */
     bool pending_ = false;
+    /**
+     * A player already played bang in this round.
+     */
+    bool played_bang_ = false;
 public:
     Player();
 
@@ -63,9 +78,44 @@ public:
     void setCards(vector<shared_ptr<PlayableCard>> cards);
 
     /**
+     * Lays card from hand to table.
+     */
+    void layCard(int position);
+
+    /**
      * Gets cards in user hand.
      */
     vector<shared_ptr<PlayableCard>> & getCards();
+
+    /**
+     * Sets permanent cards.
+     */
+    void setPermanentCards(vector<shared_ptr<PermanentCard>> cards);
+
+    /**
+     * Gets laid permanent cards.
+     */
+    vector<shared_ptr<PermanentCard>> & getPermanentCards();
+
+    /**
+     * Gets shooting range.
+     */
+    int getGunRange() const;
+
+    /**
+     * Checks whether the player can play unlimited number of BangCard in a single round.
+     */
+    bool hasUnlimitedBang() const;
+
+    /**
+     * Gets from distance tweak caused by permanent cards.
+     */
+    int getDistanceFrom() const;
+
+    /**
+     * Gets to distance tweak caused by permanent cards.
+     */
+    int getDistanceTo() const;
 
     /**
      * Decreases life points by one.
@@ -101,6 +151,10 @@ public:
     void setPending(bool pending);
 
     bool isPending() const;
+
+    void setPlayedBang(bool played);
+
+    bool hasPlayedBang() const;
 };
 
 

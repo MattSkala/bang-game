@@ -19,6 +19,7 @@
  * GET_PLAYERS_INFO | username,life,character,role,on_turn,pending;... | Returns a list of players with game info.
  * START | OK | Starts the game.
  * GET_CARDS | originalname1;originalname2;... | Returns a list of cards in hand.
+ * GET_PERMANENT_CARDS | username1:originalname1,originalname2;... | Returns lists of laid permanent cards.
  * PLAY_CARD\|position[\|target] | OK | Plays a card from hand with optional target.
  * DISCARD_CARD\|position | OK |  Discards a card from hand.
  * FINISH_ROUND | OK | Finishes current round.
@@ -120,6 +121,11 @@ public:
      * The response that is returned by server on response-less request.
      */
     static const string SUCCESS;
+
+    /**
+     * The response that is returned by server on error.
+     */
+    static const string ERROR;
 
     /// Starts the game server.
     /**

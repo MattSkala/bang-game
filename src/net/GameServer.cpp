@@ -19,6 +19,7 @@
 #define BUFFER_SIZE 1024
 
 const string GameServer::SUCCESS = "OK";
+const string GameServer::ERROR = "ERROR";
 
 GameServer::GameServer(Game &game) : game_(game) { }
 
@@ -107,7 +108,7 @@ void GameServer::waitForConnection() {
             if (result) {
                 string res = processRequest(req, i);
                 sendResponse(connections_[i], res);
-                cout << req << " -> " << res << endl;
+                // cout << req << " -> " << res << endl;
             } else {
                 // client closed connection
                 handleUserLeave(it);
@@ -250,13 +251,27 @@ string GameServer::processRequest(string req, int connection) {
         sendEvent("START");
         res = GameServer::SUCCESS;
     } else if ("GET_CARDS" == req) {
-        int socket = connections_[connection];
-        Player *player = players_[socket];
         vector<shared_ptr<PlayableCard>> cards = player->getCards();
         res = "";
         for (unsigned int i = 0; i < cards.size(); i++) {
             res += cards[i]->getOriginalName();
             if (i < cards.size() - 1) {
+                res += ";";
+            }
+        }
+    } else if ("GET_PERMANENT_CARDS" == req) {
+        res = "";
+        vector<Player *> players = game_.getPlayers();
+        for (unsigned int i = 0; i < players.size(); i++) {
+            res += players[i]->getName() + ":";
+            vector<shared_ptr<PermanentCard>> cards = players[i]->getPermanentCards();
+            for (unsigned int j = 0; j < cards.size(); j++) {
+                res += cards[j]->getOriginalName();
+                if (j < cards.size() - 1) {
+                    res += ",";
+                }
+            }
+            if (i < players.size() - 1) {
                 res += ";";
             }
         }
@@ -277,9 +292,12 @@ string GameServer::processRequest(string req, int connection) {
             target = stoi(args[2]);
         }
         string card_name = player->getCards()[position]->getOriginalName();
-        game_.playCard(player, position, target);
-        sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target));
-        res = GameServer::SUCCESS;
+        if (game_.playCard(player, position, target)) {
+            sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target));
+            res = GameServer::SUCCESS;
+        } else {
+            res = GameServer::ERROR;
+        }
     } else if ("PROCEED" == args[0]) {
         game_.proceed(player);
         sendEvent("PROCEED|" + player->getName());

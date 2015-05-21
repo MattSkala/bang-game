@@ -22,10 +22,23 @@ void GameController::updatePlayersInfo() {
     }
 }
 
+void GameController::updatePermanentCards() {
+    map<string, vector<string>> players = client_.getPermanentCards();
+    for (auto & player : players) {
+        game_.updatePermanentCards(player.first, player.second);
+    }
+}
+
 void GameController::updateCards() {
     vector<string> names = client_.getCards();
     vector<shared_ptr<PlayableCard>> cards = game_.getCardsByNames(names);
     game_.getMe()->setCards(cards);
+}
+
+void GameController::update() {
+    updatePlayersInfo();
+    updatePermanentCards();
+    updateCards();
 }
 
 void GameController::actionInit() {
@@ -80,11 +93,11 @@ void GameController::actionInit() {
                     state_ = STATE_PLAY_TARGET;
                     renderBoard();
                 } else {
-                    client_.playCard(card_position);
-                    state_ = STATE_ON_TURN;
-                    updatePlayersInfo();
-                    updateCards();
-                    renderBoard();
+                    if (!client_.playCard(card_position)) {
+                        error_ = true;
+                        update();
+                        renderBoard();
+                    }
                 }
             } else {
                 renderBoard();
@@ -94,11 +107,12 @@ void GameController::actionInit() {
             int player_position;
             if (scanChar(line, c)
                 && (player_position = toupper(c) - 'A') >= 0 && player_position < (int) game_.getPlayers().size()) {
-                client_.playCard(card_position, player_position);
-                state_ = STATE_ON_TURN;
-                updatePlayersInfo();
-                updateCards();
-                renderBoard();
+
+                if (!client_.playCard(card_position, player_position)) {
+                    error_ = true;
+                    update();
+                    renderBoard();
+                }
             } else {
                 renderBoard();
             }
@@ -153,6 +167,11 @@ void GameController::renderBoard() {
         cout << player->getCharacter()->getName();
         cout << "  \u2665 " << player->getLife();
         cout << endl;
+
+        vector<shared_ptr<PermanentCard>> cards = players[i]->getPermanentCards();
+        for (unsigned int j = 0; j < cards.size(); j++) {
+            cout << "    [" << j << "] " << cards[j]->getName() << " (" << cards[j]->getOriginalName() << ")" << endl;
+        }
     }
 
     cout << endl;
@@ -172,6 +191,11 @@ void GameController::renderBoard() {
             cout << " -> " << game_.getPlayers()[last_card_target_]->getName();
         }
         cout << endl << endl;
+    }
+
+    if (error_) {
+        cout << "Tuto kartu nelze nyní zahrát." << endl << endl;
+        error_ = false;
     }
 
     if (state_ == STATE_ON_TURN) {
@@ -196,21 +220,18 @@ void GameController::actionRefresh() {
 }
 
 bool GameController::onStreamEvent(vector<string> event) {
-    cout << "stream event:" << event[0] << endl;
+    //cout << "stream event:" << event[0] << endl;
     if (event[0] == "NEXT_ROUND") {
-        updatePlayersInfo();
-        updateCards();
+        update();
         renderBoard();
     } else if (event[0] == "PLAY_CARD") {
         last_card_player_ = event[1];
         last_card_ = game_.getCard(event[2]);
         last_card_target_ = stoi(event[3]);
-        updatePlayersInfo();
-        updateCards();
+        update();
         renderBoard();
     } else if (event[0] == "PROCEED") {
-        updatePlayersInfo();
-        updateCards();
+        update();
         renderBoard();
     }
     return true;

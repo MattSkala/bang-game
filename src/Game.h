@@ -43,6 +43,11 @@ private:
      * Sets players default life points to max value.
      */
     void setLifePoints();
+
+    /**
+     * Gets player's position.
+     */
+    int getPlayerPosition(Player * player) const;
 public:
     Game();
 
@@ -114,9 +119,19 @@ public:
     Player * getPlayerOnTurn();
 
     /**
+     * Computes a distance between two players.
+     */
+    int getDistance(Player *player, int target) const;
+
+    /**
      * Updates player info. Should be called by client when received updated info from server.
      */
     bool updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending);
+
+    /**
+     * Updates player's permanent cards. Should be called by client when received updated info from server.
+     */
+    bool updatePermanentCards(string name, vector<string> cards);
 
     /**
      * A player draws a card.

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Player.h"
+#include "GunCard.h"
 
 using namespace std;
 
@@ -38,8 +39,64 @@ void Player::setCards(vector<shared_ptr<PlayableCard>> cards) {
     cards_ = cards;
 }
 
+void Player::layCard(int position) {
+    shared_ptr<PermanentCard> card = dynamic_pointer_cast<PermanentCard>(cards_[position]);
+    cards_.erase(cards_.begin() + position);
+    permanents_.push_back(card);
+}
+
 vector<shared_ptr<PlayableCard>>& Player::getCards() {
     return cards_;
+}
+
+void Player::setPermanentCards(vector<shared_ptr<PermanentCard>> cards) {
+    permanents_ = cards;
+}
+
+vector<shared_ptr<PermanentCard>>& Player::getPermanentCards() {
+    return permanents_;
+}
+
+int Player::getGunRange() const {
+    for (auto & card : permanents_) {
+        shared_ptr<GunCard> gun = dynamic_pointer_cast<GunCard>(card);
+        if (gun) {
+            return gun->getDistance();
+        }
+    }
+    return 1;
+}
+
+bool Player::hasUnlimitedBang() const {
+    for (auto & card : permanents_) {
+        shared_ptr<GunCard> gun = dynamic_pointer_cast<GunCard>(card);
+        if (gun) {
+            return gun->hasUnlimitedBang();
+        }
+    }
+    return false;
+}
+
+int Player::getDistanceFrom() const {
+    int distance = 0;
+    for (auto card : permanents_) {
+        int tweak = card->getDistanceTweak();
+        if (tweak < 0) {
+            distance += tweak;
+        }
+    }
+    return distance;
+}
+
+int Player::getDistanceTo() const {
+    int distance = 0;
+    for (auto card : permanents_) {
+        int tweak = card->getDistanceTweak();
+        if (tweak > 0) {
+            distance += tweak;
+        }
+    }
+    return distance;
 }
 
 unsigned int Player::getLife() const {
@@ -82,4 +139,12 @@ void Player::setPending(bool pending) {
 
 bool Player::isPending() const {
     return pending_;
+}
+
+void Player::setPlayedBang(bool played) {
+    played_bang_ = played;
+}
+
+bool Player::hasPlayedBang() const {
+    return played_bang_;
 }

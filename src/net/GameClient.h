@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <map>
 #include <mutex>
 #include "../entity/Player.h"
 
@@ -103,6 +104,9 @@ public:
 
     /// Gets a list of cards in hand.
     vector<string> getCards();
+
+    /// Gets lists of laid permanent cards.
+    map<string, vector<string>> getPermanentCards();
 
     /// Finishes current round.
     bool finishRound();

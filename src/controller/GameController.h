@@ -37,12 +37,15 @@ class GameController : public Controller {
     function<bool(vector<string>)> listener_;
     bool onStreamEvent(vector<string> event);
     int state_ = GameController::STATE_WAIT;
+    bool error_ = false;
 
     shared_ptr<PlayableCard> last_card_;
     string last_card_player_;
     int last_card_target_;
 
+    void update();
     void updatePlayersInfo();
+    void updatePermanentCards();
     void updateCards();
 public:
     GameController(Game & game, GameClient & client);

@@ -34,6 +34,7 @@ Card* CardsParser::createCard(vector<string> row) {
     string name = row[COL_NAME];
     string type = row[COL_TYPE];
     int count = stoi(row[COL_COUNT]);
+    int distance = row[COL_DISTANCE].size() > 0 ? stoi(row[COL_DISTANCE]) : 0;
     bool miss = row[COL_MISSED] == "1";
     bool bang = row[COL_BANG] == "1";
     bool heal = row[COL_HEAL] == "1";
@@ -69,13 +70,13 @@ Card* CardsParser::createCard(vector<string> row) {
         card->setTargetSelf(target_self);
         return card;
     } else if (type == "permanent") {
-        return new PermanentCard(original_name, name, count);
+        PermanentCard * card = new PermanentCard(original_name, name, count);
+        card->setDistanceTweak(distance);
+        return card;
     } else if (type == "gun") {
-        GunCard * card = new GunCard(original_name, name, count);
-        int distance = stoi(row[COL_DISTANCE]);
-        card->setDistance(distance);
-        //bool unlimited_bang = (row[COL_UNLIMITED_BANG] == "1");
-        //card->setUnlimitedBang(unlimited_bang);
+        GunCard * card = new GunCard(original_name, name, count, distance);
+        bool unlimited_bang = (row[COL_UNLIMITED_BANG] == "1");
+        card->setUnlimitedBang(unlimited_bang);
         return card;
     } else {
         return NULL;
