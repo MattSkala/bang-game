@@ -8,6 +8,7 @@
 #include "entity/Card.h"
 #include "entity/CharacterCard.h"
 #include "entity/RoleCard.h"
+#include "entity/PlayableCard.h"
 
 
 /// A game engine holding card pack, connected players and current game state.
@@ -15,11 +16,13 @@ class Game {
 private:
     vector<shared_ptr<RoleCard>> roles_;
     vector<shared_ptr<CharacterCard>> characters_;
-    vector<shared_ptr<Card>> cards_;
-    list<shared_ptr<Card>> pack_;
+    vector<shared_ptr<PlayableCard>> cards_;
+    list<shared_ptr<PlayableCard>> pack_;
     vector<Player *> players_;
     Player * player_on_turn_;
     Player * me_;
+
+    PlayableCard * pending_card_ = NULL;
 
     /**
      * Assigns roles to players.
@@ -40,16 +43,6 @@ private:
      * Sets players default life points to max value.
      */
     void setLifePoints();
-
-    /**
-     * Finds a player by name.
-     */
-    Player * getPlayer(string name);
-
-    /**
-     * Finds a card by name.
-     */
-    shared_ptr<Card> getCard(string name);
 public:
     Game();
 
@@ -76,9 +69,24 @@ public:
     vector<Player *> & getPlayers();
 
     /**
+     * Gets number of pending players.
+     */
+    int getPendingPlayersCount() const;
+
+    /**
      * Sets cards pack.
      */
     void setPack(vector<Card *> cards);
+
+    /**
+     * Sets a pending card.
+     */
+    void setPendingCard(PlayableCard * card);
+
+    /**
+     * Returns a pending card.
+     */
+    PlayableCard * getPendingCard();
 
     /**
      * Initializes the game. Should be called by server.
@@ -88,7 +96,17 @@ public:
     /**
      * Finds cards in pack by their original names.
      */
-    vector<shared_ptr<Card>> getCardsByNames(vector<string> names) const;
+    vector<shared_ptr<PlayableCard>> getCardsByNames(vector<string> names) const;
+
+    /**
+     * Finds a player by name.
+     */
+    Player * getPlayer(string name);
+
+    /**
+     * Finds a card by name.
+     */
+    shared_ptr<PlayableCard> getCard(string name);
 
     /**
      * Gets player on turn.
@@ -98,7 +116,7 @@ public:
     /**
      * Updates player info. Should be called by client when received updated info from server.
      */
-    bool updatePlayer(string name, int life, string character, string role, bool on_turn);
+    bool updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending);
 
     /**
      * A player draws a card.
@@ -106,20 +124,26 @@ public:
     void drawCard(Player * player);
 
     /**
-     * Draws two cards at the beginning phase of the round.
-     * \return True on success, false if player cannot draw cards.
+     * Discards a card from hand.
+     * \param player A player that wants to discard a card.
+     * yparam position A position of the card in hand.
      */
-    bool drawCards(Player * player);
+    bool discardCard(Player * player, int position);
 
     /**
      * Plays a card.
      */
-    bool playCard(Card * card);
+    bool playCard(Player * player, int position, int target);
 
     /**
-     * Finishes current round and hands control over to other player.
+     * Finishes current round and hands control over to the next player.
      */
     void finishRound();
+
+    /**
+     * Does not reply to pending card.
+     */
+    void proceed(Player * player);
 };
 
 

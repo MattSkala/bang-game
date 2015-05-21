@@ -2,13 +2,14 @@
 #define BANG_INSTANTCARD_H
 
 
-#include "Card.h"
+#include "PlayableCard.h"
 
 
 /// A playable card which can be played only once and has an instant effect
-class InstantCard : public Card {
+class InstantCard : public PlayableCard {
 public:
     InstantCard(string original_name, string name, int count);
+    virtual bool play(Game * game, Player * player, int position, int target);
 };
 
 

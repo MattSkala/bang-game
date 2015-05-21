@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <mutex>
 #include "../entity/Player.h"
 
 using namespace std;
@@ -17,6 +18,7 @@ private:
     int api_socket_;
     vector<function<bool(vector<string>)>> listeners_;
     thread stream_thread_;
+    mutex lock_;
 
     /**
      * Opens new socket and connects to server on provided port.
@@ -39,14 +41,8 @@ private:
      */
     bool receiveResponse(string & res, int socket);
 
-    /// Sends a request to game server through API socket.
-    /**
-     * GameClient::receiveResponse should be called immediately after to obtain the response.
-     */
-    void sendRequest(string req);
-
-    /// Receives a response from the server through API socket.
-    bool receiveResponse(string & res);
+    /// Sends a request to game server through API socket and receives a response. The call is thread-safe.
+    bool sendRequest(string req, string & res);
 
     /// Opens new stream connection and starts GameClient::stream in a new detached thread.
     void connectStream(string host, int port);
@@ -107,6 +103,21 @@ public:
 
     /// Gets a list of cards in hand.
     vector<string> getCards();
+
+    /// Finishes current round.
+    bool finishRound();
+
+    /// Discards a card from hand.
+    bool discardCard(int position);
+
+    /// Plays a card from hand.
+    bool playCard(int position);
+
+    /// Plays a card from hand with effect on target player.
+    bool playCard(int position, int target);
+
+    /// Does not reply to pending card.
+    bool proceed();
 
     ///@}
 };

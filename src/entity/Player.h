@@ -7,16 +7,18 @@
 #include <memory>
 #include "RoleCard.h"
 #include "CharacterCard.h"
+#include "PlayableCard.h"
 
 
 /// A player entity storing cards on hand, a role, a character and life points.
 class Player {
 private:
-    int life_ = 0;
+    unsigned int life_ = 0;
     std::string name_;
     RoleCard * role_ = NULL;
     CharacterCard * character_ = NULL;
-    vector<shared_ptr<Card>> cards_;
+    vector<shared_ptr<PlayableCard>> cards_;
+    bool pending_ = false;
 public:
     Player();
 
@@ -53,17 +55,17 @@ public:
     /**
      * Adds a card to user hand.
      */
-    void addCard(shared_ptr<Card> card);
+    void addCard(shared_ptr<PlayableCard> card);
 
     /**
      * Sets cards in user hand.
      */
-    void setCards(vector<shared_ptr<Card>> cards);
+    void setCards(vector<shared_ptr<PlayableCard>> cards);
 
     /**
      * Gets cards in user hand.
      */
-    vector<shared_ptr<Card>> & getCards();
+    vector<shared_ptr<PlayableCard>> & getCards();
 
     /**
      * Decreases life points by one.
@@ -79,22 +81,26 @@ public:
     /**
      * Returns current life points count.
      */
-    int getLife() const;
+    unsigned int getLife() const;
 
     /**
      * Sets current life points count.
      */
-    void setLife(int life);
+    void setLife(unsigned int life);
 
     /**
      * Returns maximum life points computed from role and character.
      */
-    int getMaxLife() const;
+    unsigned int getMaxLife() const;
 
     /**
      * Checks whether the player is alive (life points > 0).
      */
     bool isAlive() const;
+
+    void setPending(bool pending);
+
+    bool isPending() const;
 };
 
 

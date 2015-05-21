@@ -18,6 +18,3 @@ string Card::getName() const {
 int Card::getCount() const {
     return count_;
 }
-
-void Card::play(Game &game) const {
-}

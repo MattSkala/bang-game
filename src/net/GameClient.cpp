@@ -80,11 +80,16 @@ bool GameClient::isConnected() {
 }
 
 void GameClient::sendRequest(string req, int socket) {
+    cout << "sendRequest:" << req << endl;
     send(socket, req.c_str(), req.size(), 0);
 }
 
-void GameClient::sendRequest(string req) {
+bool GameClient::sendRequest(string req, string & res) {
+    lock_.lock();
     sendRequest(req, api_socket_);
+    int status = receiveResponse(res, api_socket_);
+    lock_.unlock();
+    return status;
 }
 
 bool GameClient::receiveResponse(string & res, int socket) {
@@ -106,12 +111,9 @@ bool GameClient::receiveResponse(string & res, int socket) {
 
     res = string(buffer, received);
 
-    return true;
-}
+    cout << "receiveResponse:" << res << endl;
 
-bool GameClient::receiveResponse(string &res) {
-    bool status = receiveResponse(res, api_socket_);
-    return status;
+    return true;
 }
 
 void GameClient::stream(string host, int port) {
@@ -164,28 +166,25 @@ bool GameClient::removeListener(function<bool(vector<string>)> f) {
 }
 
 bool GameClient::join(string username) {
-    sendRequest("JOIN|" + username);
     string res;
-    return receiveResponse(res) && res == GameServer::SUCCESS;
+    return sendRequest("JOIN|" + username, res) && res == GameServer::SUCCESS;
 }
 
 bool GameClient::addBot() {
-    sendRequest("ADD_BOT");
     string res;
-    return receiveResponse(res) && res == GameServer::SUCCESS;
+    return sendRequest("ADD_BOT", res) && res == GameServer::SUCCESS;
 }
 
 vector<string> GameClient::getPlayers() {
-    sendRequest("GET_PLAYERS");
     string res;
-    receiveResponse(res);
+    sendRequest("GET_PLAYERS", res);
     return explode(res, ';');
 }
 
 vector<vector<string>> GameClient::getPlayersInfo() {
-    sendRequest("GET_PLAYERS_INFO");
     string res;
-    receiveResponse(res);
+    sendRequest("GET_PLAYERS_INFO", res);
+    cout << res << endl;
     vector<string> users = explode(res, ';');
     vector<vector<string>> players;
     for (string user : users) {
@@ -196,14 +195,37 @@ vector<vector<string>> GameClient::getPlayersInfo() {
 }
 
 bool GameClient::startGame() {
-    sendRequest("START");
     string res;
-    return receiveResponse(res) && res == GameServer::SUCCESS;
+    return sendRequest("START", res) && res == GameServer::SUCCESS;
 }
 
 vector<string> GameClient::getCards() {
-    sendRequest("GET_CARDS");
     string res;
-    receiveResponse(res);
+    sendRequest("GET_CARDS", res);
     return explode(res, ';');
+}
+
+bool GameClient::finishRound() {
+    string res;
+    return sendRequest("FINISH_ROUND", res) && res == GameServer::SUCCESS;
+}
+
+bool GameClient::discardCard(int position) {
+    string res;
+    return sendRequest("DISCARD_CARD|" + to_string(position), res) && res == GameServer::SUCCESS;
+}
+
+bool GameClient::playCard(int position) {
+    string res;
+    return sendRequest("PLAY_CARD|" + to_string(position), res) && res == GameServer::SUCCESS;
+}
+
+bool GameClient::playCard(int position, int target) {
+    string res;
+    return sendRequest("PLAY_CARD|" + to_string(position) + "|" + to_string(target), res) && res == GameServer::SUCCESS;
+}
+
+bool GameClient::proceed() {
+    string res;
+    return sendRequest("PROCEED", res) && res == GameServer::SUCCESS;
 }

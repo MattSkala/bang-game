@@ -7,13 +7,43 @@
 
 /// A controller for game screen.
 class GameController : public Controller {
+    /**
+     * Another player is playing, we are waiting...
+     */
+    static const int STATE_WAIT = 0;
+    /**
+     * We are on turn. What shall we do?
+     */
+    static const int STATE_ON_TURN = 1;
+    /**
+     * We are about to play a card.
+     */
+    static const int STATE_PLAY_CARD = 2;
+    /**
+     * We are selecting target for previously selected card.
+     */
+    static const int STATE_PLAY_TARGET = 3;
+    /**
+     * We are selecting card to discard.
+     */
+    static const int STATE_DISCARD_CARD = 4;
+    /**
+     * We have to reply to pending card.
+     */
+    static const int STATE_PENDING = 5;
+
     Game & game_;
     GameClient & client_;
     function<bool(vector<string>)> listener_;
-    bool on_turn_ = false;
     bool onStreamEvent(vector<string> event);
+    int state_ = GameController::STATE_WAIT;
+
+    shared_ptr<PlayableCard> last_card_;
+    string last_card_player_;
+    int last_card_target_;
 
     void updatePlayersInfo();
+    void updateCards();
 public:
     GameController(Game & game, GameClient & client);
 

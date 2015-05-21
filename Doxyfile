@@ -14,3 +14,5 @@ HAVE_DOT               = YES
 UML_LOOK               = YES
 INCLUDE_GRAPH          = YES
 COLLABORATION_GRAPH    = NO
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = YES

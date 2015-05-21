@@ -7,11 +7,9 @@
 using namespace std;
 
 
-class Game;
-
 /// An abstract card entity.
 class Card {
-protected:
+private:
     /// The original name of the card.
     string original_name_;
 
@@ -24,8 +22,6 @@ public:
     Card(string original_name, string name, int count);
 
     virtual ~Card();
-
-    virtual void play(Game & game) const;
 
     string getOriginalName() const;
 

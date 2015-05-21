@@ -16,12 +16,13 @@
  * JOIN\|username | OK | Joins the game with given username.
  * ADD_BOT | OK | Adds a bot player.
  * GET_PLAYERS | username1;username2;... | Returns a list of connected players.
- * GET_PLAYERS_INFO | username,life,character,role,on_turn;... | Returns a list of players with game info.
+ * GET_PLAYERS_INFO | username,life,character,role,on_turn,pending;... | Returns a list of players with game info.
  * START | OK | Starts the game.
  * GET_CARDS | originalname1;originalname2;... | Returns a list of cards in hand.
- * PLAY_CARD\|originalname[\|options...] | OK | Plays a card with optional options (e. g. target player).
- * DRAW_CARD | originalname | Draws a card from pack.
+ * PLAY_CARD\|position[\|target] | OK | Plays a card from hand with optional target.
+ * DISCARD_CARD\|position | OK |  Discards a card from hand.
  * FINISH_ROUND | OK | Finishes current round.
+ * PROCEED | OK | Does not reply to pending card.
  *
  *
  * \section Stream Events
@@ -34,7 +35,7 @@
  * JOIN\|username | A player joined the game.
  * LEAVE\|username | The player left the game.
  * START | The game was started by the host.
- * NEXT_ROUND\|username | The player starts his round.
+ * NEXT_ROUND | The next player is on turn.
  * PLAY_CARD\|username\|originalname[\|options...] | The card was played.
  */
 class GameServer {

@@ -8,11 +8,11 @@
 /// A player character card. It is assigned to each player at the start of the game.
 class CharacterCard : public Card {
 private:
-    int life_;
+    unsigned int life_;
 public:
     CharacterCard(string original_name, string name, int count);
-    void setLife(int life);
-    int getLife() const;
+    void setLife(unsigned int life);
+    unsigned int getLife() const;
 };
 
 

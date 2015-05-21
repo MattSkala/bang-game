@@ -107,6 +107,7 @@ void GameServer::waitForConnection() {
             if (result) {
                 string res = processRequest(req, i);
                 sendResponse(connections_[i], res);
+                cout << req << " -> " << res << endl;
             } else {
                 // client closed connection
                 handleUserLeave(it);
@@ -193,15 +194,15 @@ string GameServer::processRequest(string req, int connection) {
     int socket = connections_[connection];
     Player * player = players_[socket];
 
-    vector<string> req_parts = explode(req, '|');
+    vector<string> args = explode(req, '|');
 
-    if ("JOIN" == req_parts[0]) {
+    if ("JOIN" == args[0]) {
         // add user
         player = new Player();
-        player->setName(req_parts[1]);
+        player->setName(args[1]);
         game_.addPlayer(player);
         players_[socket] = player;
-        sendEvent("JOIN|" + req_parts[1]);
+        sendEvent("JOIN|" + args[1]);
         res = GameServer::SUCCESS;
     } else if ("GET_PLAYERS" == req) {
         res = "";
@@ -232,6 +233,8 @@ string GameServer::processRequest(string req, int connection) {
             }
             res += ',';
             res += to_string(game_.getPlayerOnTurn()->getName() == players[i]->getName());
+            res += ',';
+            res += to_string(players[i]->isPending());
 
             if (i < players.size() - 1) {
                 res += ';';
@@ -242,13 +245,14 @@ string GameServer::processRequest(string req, int connection) {
         res = GameServer::SUCCESS;
     } else if ("START" == req) {
         game_.initGame();
-        game_.drawCards(game_.getPlayerOnTurn());
+        game_.drawCard(game_.getPlayerOnTurn());
+        game_.drawCard(game_.getPlayerOnTurn());
         sendEvent("START");
         res = GameServer::SUCCESS;
     } else if ("GET_CARDS" == req) {
         int socket = connections_[connection];
         Player *player = players_[socket];
-        vector<shared_ptr<Card>> cards = player->getCards();
+        vector<shared_ptr<PlayableCard>> cards = player->getCards();
         res = "";
         for (unsigned int i = 0; i < cards.size(); i++) {
             res += cards[i]->getOriginalName();
@@ -256,7 +260,30 @@ string GameServer::processRequest(string req, int connection) {
                 res += ";";
             }
         }
-        // TODO: check why someone has no cards
+    } else if ("FINISH_ROUND" == req) {
+        game_.finishRound();
+        game_.drawCard(game_.getPlayerOnTurn());
+        game_.drawCard(game_.getPlayerOnTurn());
+        sendEvent("NEXT_ROUND");
+        res = GameServer::SUCCESS;
+    } else if ("DISCARD_CARD" == args[0]) {
+        int position = stoi(args[1]);
+        game_.discardCard(player, position);
+        res = GameServer::SUCCESS;
+    } else if ("PLAY_CARD" == args[0]) {
+        int position = stoi(args[1]);
+        int target = -1;
+        if (args.size() >= 3) {
+            target = stoi(args[2]);
+        }
+        string card_name = player->getCards()[position]->getOriginalName();
+        game_.playCard(player, position, target);
+        sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target));
+        res = GameServer::SUCCESS;
+    } else if ("PROCEED" == args[0]) {
+        game_.proceed(player);
+        sendEvent("PROCEED|" + player->getName());
+        res = GameServer::SUCCESS;
     } else {
         res = "INVALID_REQUEST";
     }

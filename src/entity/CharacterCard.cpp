@@ -2,10 +2,10 @@
 
 CharacterCard::CharacterCard(string original_name, string name, int count) : Card(original_name, name, count) { }
 
-void CharacterCard::setLife(int life) {
+void CharacterCard::setLife(unsigned int life) {
     life_ = life;
 }
 
-int CharacterCard::getLife() const {
+unsigned int CharacterCard::getLife() const {
     return life_;
 }

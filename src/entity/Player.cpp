@@ -30,19 +30,19 @@ CharacterCard* Player::getCharacter() const {
     return character_;
 }
 
-void Player::addCard(shared_ptr<Card> card) {
+void Player::addCard(shared_ptr<PlayableCard> card) {
     cards_.push_back(card);
 }
 
-void Player::setCards(vector<shared_ptr<Card>> cards) {
+void Player::setCards(vector<shared_ptr<PlayableCard>> cards) {
     cards_ = cards;
 }
 
-vector<shared_ptr<Card>>& Player::getCards() {
+vector<shared_ptr<PlayableCard>>& Player::getCards() {
     return cards_;
 }
 
-int Player::getLife() const {
+unsigned int Player::getLife() const {
     return life_;
 }
 
@@ -64,14 +64,22 @@ bool Player::increaseLife() {
     return true;
 }
 
-void Player::setLife(int life) {
+void Player::setLife(unsigned int life) {
     life_ = life;
 }
 
-int Player::getMaxLife() const {
-    int life = character_->getLife();
+unsigned int Player::getMaxLife() const {
+    unsigned int life = character_->getLife();
     if (role_->getOriginalName() == RoleCard::SHERIFF) {
         life++;
     }
     return life;
+}
+
+void Player::setPending(bool pending) {
+    pending_ = pending;
+}
+
+bool Player::isPending() const {
+    return pending_;
 }

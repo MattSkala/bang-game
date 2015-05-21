@@ -2,13 +2,14 @@
 #define BANG_PERMANENTCARD_H
 
 
-#include "Card.h"
+#include "PlayableCard.h"
 
 
 /// A playable card which can be laid on table and has a permanent effect until it is removed.
-class PermanentCard : public Card {
+class PermanentCard : public PlayableCard {
 public:
-    PermanentCard(std::string original_name, std::string name, int count);
+    PermanentCard(string original_name, string name, int count);
+    virtual bool play(Game * game, Player * player, int position, int target);
 };
 
 

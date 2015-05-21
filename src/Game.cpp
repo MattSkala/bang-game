@@ -30,17 +30,27 @@ vector<Player *>& Game::getPlayers() {
     return players_;
 }
 
+int Game::getPendingPlayersCount() const {
+    int pending = 0;
+    for (Player *item : players_) {
+        if (item->isPending()) {
+            pending++;
+        }
+    }
+    return pending;
+}
+
 void Game::setPack(vector<Card *> cards) {
     vector<shared_ptr<RoleCard>> roles;
     vector<shared_ptr<CharacterCard>> characters;
-    vector<shared_ptr<Card>> pack;
+    vector<shared_ptr<PlayableCard>> pack;
     for (Card* card : cards) {
         if (RoleCard* role = dynamic_cast<RoleCard*>(card)) {
             roles.push_back(shared_ptr<RoleCard>(role));
         } else if (CharacterCard* character = dynamic_cast<CharacterCard*>(card)) {
             characters.push_back(shared_ptr<CharacterCard>(character));
-        } else {
-            shared_ptr<Card> card_ptr = shared_ptr<Card>(card);
+        } else if (PlayableCard* playable = dynamic_cast<PlayableCard*>(card)) {
+            shared_ptr<PlayableCard> card_ptr = shared_ptr<PlayableCard>(playable);
             for (int i = 0; i < card->getCount(); i++) {
                 pack.push_back(card_ptr);
             }
@@ -115,7 +125,7 @@ void Game::assignCards() {
 
     // assign initial cards to players hands
     for (Player * player : players_) {
-        for (int i = 0; i < player->getCharacter()->getLife(); i++) {
+        for (unsigned int i = 0; i < player->getMaxLife(); i++) {
             player->addCard(pack_.front());
             pack_.pop_front();
         }
@@ -131,13 +141,13 @@ void Game::setLifePoints() {
 void Game::initGame() {
     assignRoles();
     assignCharacters();
-    assignCards();
     setLifePoints();
+    assignCards();
     player_on_turn_ = players_[0];
 }
 
-shared_ptr<Card> Game::getCard(string name) {
-    for (shared_ptr<Card> card : cards_) {
+shared_ptr<PlayableCard> Game::getCard(string name) {
+    for (shared_ptr<PlayableCard> card : cards_) {
         if (card->getOriginalName() == name) {
             return card;
         }
@@ -145,10 +155,10 @@ shared_ptr<Card> Game::getCard(string name) {
     return NULL;
 }
 
-vector<shared_ptr<Card>> Game::getCardsByNames(vector<string> names) const {
-    vector<shared_ptr<Card>> cards;
+vector<shared_ptr<PlayableCard>> Game::getCardsByNames(vector<string> names) const {
+    vector<shared_ptr<PlayableCard>> cards;
     for (string name : names) {
-        for (shared_ptr<Card> card : cards_) {
+        for (shared_ptr<PlayableCard> card : cards_) {
             if (card->getOriginalName() == name) {
                 cards.push_back(card);
                 break;
@@ -163,7 +173,7 @@ Player * Game::getPlayerOnTurn() {
 }
 
 Player * Game::getPlayer(string name) {
-    for (Player * player : players_) {
+    for (Player *player : players_) {
         if (player->getName() == name) {
             return player;
         }
@@ -171,7 +181,7 @@ Player * Game::getPlayer(string name) {
     return NULL;
 }
 
-bool Game::updatePlayer(string name, int life, string character, string role, bool on_turn) {
+bool Game::updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending) {
     Player * player = getPlayer(name);
     if (player == NULL) {
         return false;
@@ -201,24 +211,59 @@ bool Game::updatePlayer(string name, int life, string character, string role, bo
         player_on_turn_ = player;
     }
 
-    return true;
-}
+    player->setPending(pending);
 
-bool Game::drawCards(Player *player) {
-    if (player != getPlayerOnTurn()) {
-        return false;
-    }
-
-    if ((int) player->getCards().size() != player->getMaxLife()) {
-        return false;
-    }
-
-    drawCard(player);
-    drawCard(player);
     return true;
 }
 
 void Game::drawCard(Player *player) {
     player->addCard(pack_.front());
     pack_.pop_front();
+}
+
+bool Game::discardCard(Player *player, int position) {
+    vector<shared_ptr<PlayableCard>> & cards = player->getCards();
+    if ((int) cards.size() > position) {
+        pack_.push_back(cards[position]);
+        cards.erase(cards.begin() + position);
+        return true;
+    }
+    return false;
+}
+
+bool Game::playCard(Player *player, int position, int target) {
+    shared_ptr<PlayableCard> ptr = player->getCards()[position];
+    PlayableCard * card = ptr.get();
+    return card->play(this, player, position, target);
+}
+
+void Game::finishRound() {
+    if (players_.back() == player_on_turn_) {
+        player_on_turn_ = players_.front();
+    } else {
+        for (unsigned int i = 0; i < players_.size(); i++) {
+            if (players_[i] == player_on_turn_) {
+                player_on_turn_ = players_[i + 1];
+                break;
+            }
+        }
+    }
+}
+
+void Game::setPendingCard(PlayableCard *card) {
+    pending_card_ = card;
+}
+
+PlayableCard * Game::getPendingCard() {
+    return pending_card_;
+}
+
+void Game::proceed(Player *player) {
+    pending_card_->proceed(this, player);
+
+    player->setPending(false);
+
+    if (getPendingPlayersCount() == 0) {
+        pending_card_ = NULL;
+    }
 }
