@@ -236,6 +236,8 @@ string GameServer::processRequest(string req, int connection) {
             res += to_string(game_.getPlayerOnTurn()->getName() == players[i]->getName());
             res += ',';
             res += to_string(players[i]->isPending());
+            res += ',';
+            res += to_string(players[i]->getCards().size());
 
             if (i < players.size() - 1) {
                 res += ';';
@@ -287,16 +289,13 @@ string GameServer::processRequest(string req, int connection) {
         res = GameServer::SUCCESS;
     } else if ("PLAY_CARD" == args[0]) {
         int position = stoi(args[1]);
-        int target = -1;
-        if (args.size() >= 3) {
-            target = stoi(args[2]);
-        }
+        int target = stoi(args[2]);
+        int target_card = stoi(args[3]);
         string card_name = player->getCards()[position]->getOriginalName();
-        if (game_.playCard(player, position, target)) {
-            sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target));
-            res = GameServer::SUCCESS;
-        } else {
-            res = GameServer::ERROR;
+        int status = game_.playCard(player, position, target, target_card);
+        res = to_string(status);
+        if (status == Game::SUCCESS) {
+            sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target) + "|" + to_string(target_card));
         }
     } else if ("PROCEED" == args[0]) {
         game_.proceed(player);
@@ -318,6 +317,7 @@ void GameServer::sendResponse(int client_socket, string res) {
 }
 
 void GameServer::sendEvent(string event) {
+    // cout << "sendEvent: " << event << endl;
     for (unsigned int i = 0; i < stream_connections_.size(); i++) {
         sendResponse(stream_connections_[i], event + '$');
     }

@@ -14,6 +14,10 @@
 #include "../entity/MissCard.h"
 #include "../entity/BeerCard.h"
 #include "../entity/DrawCard.h"
+#include "../entity/DiscardCard.h"
+#include <iostream>
+
+using namespace std;
 
 vector<Card *> CardsParser::parseFile(string filename) {
     CsvParser parser;
@@ -51,7 +55,7 @@ Card* CardsParser::createCard(vector<string> row) {
         CharacterCard * card = new CharacterCard(original_name, name, count);
         card->setLife(stoi(row[COL_LIFE]));
         return card;
-    } else if (type == "instant") {
+    } else if (type == "instant" && !special) {
         InstantCard * card;
         if (bang) {
             card = new BangCard(original_name, name, count);
@@ -61,21 +65,23 @@ Card* CardsParser::createCard(vector<string> row) {
             card = new BeerCard(original_name, name, count);
         } else if (draw) {
             card = new DrawCard(original_name, name, count, draw);
+        } else if (discard) {
+            card = new DiscardCard(original_name, name, count);
         } else {
-            card = new InstantCard(original_name, name, count);
+            return NULL;
         }
         card->setTargetAny(target_any);
         card->setTargetOthers(target_others);
         card->setTargetDistance(target_distance);
         card->setTargetSelf(target_self);
         return card;
-    } else if (type == "permanent") {
+    } else if (type == "permanent" && !special) {
         PermanentCard * card = new PermanentCard(original_name, name, count);
         card->setDistanceTweak(distance);
         return card;
     } else if (type == "gun") {
         GunCard * card = new GunCard(original_name, name, count, distance);
-        bool unlimited_bang = (row[COL_UNLIMITED_BANG] == "1");
+        bool unlimited_bang = row[COL_UNLIMITED_BANG] == "1";
         card->setUnlimitedBang(unlimited_bang);
         return card;
     } else {

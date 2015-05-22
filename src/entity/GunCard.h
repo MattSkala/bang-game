@@ -12,7 +12,7 @@ private:
     bool unlimited_bang_;
 public:
     GunCard(string original_name, string name, int count, int distance);
-    virtual bool play(Game * game, Player * player, int position, int target);
+    virtual int play(Game * game, Player * player, int position, int target, int target_card);
     int getDistance() const;
     void setUnlimitedBang(bool unlimited);
     bool hasUnlimitedBang() const;

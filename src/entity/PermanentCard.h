@@ -11,7 +11,7 @@ private:
     int distance_tweak_ = 0;
 public:
     PermanentCard(string original_name, string name, int count);
-    virtual bool play(Game * game, Player * player, int position, int target);
+    virtual int play(Game *game, Player *player, int position, int target, int target_card);
     int getDistanceTweak() const;
     void setDistanceTweak(int distance);
 };

@@ -39,6 +39,14 @@ void Player::setCards(vector<shared_ptr<PlayableCard>> cards) {
     cards_ = cards;
 }
 
+void Player::setCardsCount(int count) {
+    cards_count_ = count;
+}
+
+int Player::getCardsCount() const {
+    return cards_count_;
+}
+
 void Player::layCard(int position) {
     shared_ptr<PermanentCard> card = dynamic_pointer_cast<PermanentCard>(cards_[position]);
     cards_.erase(cards_.begin() + position);
@@ -127,7 +135,7 @@ void Player::setLife(unsigned int life) {
 
 unsigned int Player::getMaxLife() const {
     unsigned int life = character_->getLife();
-    if (role_->getOriginalName() == RoleCard::SHERIFF) {
+    if (role_ != NULL && role_->getOriginalName() == RoleCard::SHERIFF) {
         life++;
     }
     return life;

@@ -9,7 +9,6 @@
 class InstantCard : public PlayableCard {
 public:
     InstantCard(string original_name, string name, int count);
-    virtual bool play(Game * game, Player * player, int position, int target);
 };
 
 

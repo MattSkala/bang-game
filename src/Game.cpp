@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "Game.h"
+#include "net/GameServer.h"
 
 using namespace std;
 
@@ -63,14 +64,14 @@ void Game::setPack(vector<Card *> cards) {
 
 void Game::assignRoles() {
     RoleCard * sheriff = NULL;
-    //RoleCard * deputy = NULL;
+    RoleCard * deputy = NULL;
     RoleCard * outlaw = NULL;
     RoleCard * renegate = NULL;
     for (shared_ptr<RoleCard> role : roles_) {
         if (role->getOriginalName() == RoleCard::SHERIFF) {
             sheriff = role.get();
         } else if (role->getOriginalName() == RoleCard::DEPUTY) {
-            //deputy = role.get();
+            deputy = role.get();
         } else if (role->getOriginalName() == RoleCard::OUTLAW) {
             outlaw = role.get();
         } else if (role->getOriginalName() == RoleCard::RENEGATE) {
@@ -81,19 +82,29 @@ void Game::assignRoles() {
     srand((unsigned int) time(0));
 
     // 1 sheriff
-    unsigned long sheriff_position = rand() % players_.size();
+    int sheriff_position = rand() % (int) players_.size();
     players_[sheriff_position]->setRole(sheriff);
 
     // 1 renegate
     if (players_.size() >= 4) {
-        unsigned long renegate_position;
+        int renegate_position;
         do {
-            renegate_position = rand() % players_.size();
+            renegate_position = rand() % (int) players_.size();
         } while (renegate_position == sheriff_position);
         players_[renegate_position]->setRole(renegate);
     }
 
-    // TODO: 1 or 2 deputies
+    // 1 or 2 deputies
+    int deputies = 0;
+    if (players_.size() >= 5) deputies++;
+    if (players_.size() >= 7) deputies++;
+    while (deputies > 0) {
+        int deputy_position = rand() % (int) players_.size();
+        if (players_[deputy_position]->getRole() == NULL) {
+            players_[deputy_position]->setRole(deputy);
+            deputies--;
+        }
+    }
 
     // 2 or 3 outlaws
     for (Player * player : players_) {
@@ -196,10 +207,12 @@ int Game::getDistance(Player *player, int target) const {
     int d = d1 < d2 ? d1 : d2;
 
     // Appaloosa
-    d += player->getDistanceFrom();
+    int from = player->getDistanceFrom();
+    d += from;
 
     // Mustang
-    d += players_[target]->getDistanceTo();
+    int to = players_[target]->getDistanceTo();
+    d += to;
 
     if (d < 1) {
         d = 1;
@@ -217,7 +230,7 @@ Player * Game::getPlayer(string name) {
     return NULL;
 }
 
-bool Game::updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending) {
+bool Game::updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending, unsigned int cards) {
     Player * player = getPlayer(name);
     if (player == NULL) {
         return false;
@@ -248,6 +261,8 @@ bool Game::updatePlayer(string name, unsigned int life, string character, string
     }
 
     player->setPending(pending);
+
+    player->setCardsCount(cards);
 
     return true;
 }
@@ -283,10 +298,14 @@ bool Game::discardCard(Player *player, int position) {
     return false;
 }
 
-bool Game::playCard(Player *player, int position, int target) {
+void Game::discardCard(shared_ptr<PlayableCard> card) {
+    pack_.push_back(card);
+}
+
+int Game::playCard(Player *player, int position, int target, int target_card) {
     shared_ptr<PlayableCard> ptr = player->getCards()[position];
     PlayableCard * card = ptr.get();
-    return card->play(this, player, position, target);
+    return card->play(this, player, position, target, target_card);
 }
 
 void Game::finishRound() {
@@ -322,4 +341,30 @@ void Game::proceed(Player *player) {
     if (getPendingPlayersCount() == 0) {
         pending_card_ = NULL;
     }
+}
+
+string Game::getErrorMessage(int code) {
+    switch (code) {
+        case ERROR_INVALID_CARD:
+            return "Neplatný kód zahrané karty.";
+        case ERROR_INVALID_TARGET:
+            return "Neplatný kód cílového hráče.";
+        case ERROR_INVALID_TARGET_CARD:
+            return "Neplatný kód cílové karty.";
+        case ERROR_OUT_OF_RANGE:
+            return "Cílový hráč je moc daleko.";
+        case ERROR_BANG_LIMIT:
+            return "Toto kolo jsi již kartu Bang! zahrál.";
+        case ERROR_TARGET_NO_CARDS:
+            return "Cílový hráč nemá v ruce žádné karty.";
+        case ERROR_CARD_ALREADY_LAID:
+            return "Tuto kartu máš již vyloženou.";
+        case ERROR_INVALID_MISS:
+            return "Tuto kartu lze zahrát pouze jako reakci na útok.";
+        case ERROR_INVALID_REACTION:
+            return "Nyní lze zahrát pouze kartu reagující na útok.";
+        case ERROR_UNKNOWN_CARD:
+            return "Neplatná definice karty.";
+    }
+    return "Nastala neznámá chyba.";
 }

@@ -114,11 +114,8 @@ public:
     /// Discards a card from hand.
     bool discardCard(int position);
 
-    /// Plays a card from hand.
-    bool playCard(int position);
-
-    /// Plays a card from hand with effect on target player.
-    bool playCard(int position, int target);
+    /// Plays a card from hand with effect on target player's laid card.
+    int playCard(int position, int target = -1, int target_card = -1);
 
     /// Does not reply to pending card.
     bool proceed();

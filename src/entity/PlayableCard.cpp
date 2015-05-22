@@ -18,8 +18,12 @@ void PlayableCard::setTargetSelf(bool target) {
     target_self_ = target;
 }
 
-bool PlayableCard::isTargetable() {
+bool PlayableCard::isTargetable() const {
     return target_any_ || target_distance_;
+}
+
+bool PlayableCard::isCardTargetable() const {
+    return false;
 }
 
 bool PlayableCard::proceed(Game *game, Player *player) {

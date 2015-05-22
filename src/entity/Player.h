@@ -18,6 +18,7 @@ private:
     std::string name_;
     RoleCard * role_ = NULL;
     CharacterCard * character_ = NULL;
+    int cards_count_;
     /**
      * Cards in hand.
      */
@@ -76,6 +77,16 @@ public:
      * Sets cards in user hand.
      */
     void setCards(vector<shared_ptr<PlayableCard>> cards);
+
+    /**
+     * Sets cards in hand count. Should be called by client on users who have invisible cards.
+     */
+    void setCardsCount(int count);
+
+    /**
+     * Gets cards in hand count. Should be called by client on users who have invisible cards.
+     */
+    int getCardsCount() const;
 
     /**
      * Lays card from hand to table.

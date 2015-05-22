@@ -228,14 +228,13 @@ bool GameClient::discardCard(int position) {
     return sendRequest("DISCARD_CARD|" + to_string(position), res) && res == GameServer::SUCCESS;
 }
 
-bool GameClient::playCard(int position) {
+int GameClient::playCard(int position, int target, int target_card) {
     string res;
-    return sendRequest("PLAY_CARD|" + to_string(position), res) && res == GameServer::SUCCESS;
-}
-
-bool GameClient::playCard(int position, int target) {
-    string res;
-    return sendRequest("PLAY_CARD|" + to_string(position) + "|" + to_string(target), res) && res == GameServer::SUCCESS;
+    int status = sendRequest("PLAY_CARD|" + to_string(position) + "|" + to_string(target) + "|" + to_string(target_card), res);
+    if (!status) {
+        return Game::ERROR_UNKNOWN;
+    }
+    return stoi(res);
 }
 
 bool GameClient::proceed() {

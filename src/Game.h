@@ -49,6 +49,19 @@ private:
      */
     int getPlayerPosition(Player * player) const;
 public:
+    static const int SUCCESS = 0;
+    static const int ERROR_OUT_OF_RANGE = 1;
+    static const int ERROR_INVALID_CARD = 2;
+    static const int ERROR_INVALID_TARGET = 3;
+    static const int ERROR_INVALID_TARGET_CARD = 4;
+    static const int ERROR_BANG_LIMIT = 5;
+    static const int ERROR_TARGET_NO_CARDS = 6;
+    static const int ERROR_CARD_ALREADY_LAID = 7;
+    static const int ERROR_INVALID_MISS = 8;
+    static const int ERROR_INVALID_REACTION = 9;
+    static const int ERROR_UNKNOWN_CARD = 10;
+    static const int ERROR_UNKNOWN = 100;
+
     Game();
 
     ~Game();
@@ -126,7 +139,7 @@ public:
     /**
      * Updates player info. Should be called by client when received updated info from server.
      */
-    bool updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending);
+    bool updatePlayer(string name, unsigned int life, string character, string role, bool on_turn, bool pending, unsigned int cards);
 
     /**
      * Updates player's permanent cards. Should be called by client when received updated info from server.
@@ -146,9 +159,14 @@ public:
     bool discardCard(Player * player, int position);
 
     /**
+     * Places a card to the bottom of pack.
+     */
+    void discardCard(shared_ptr<PlayableCard> card);
+
+    /**
      * Plays a card.
      */
-    bool playCard(Player * player, int position, int target);
+    int playCard(Player * player, int position, int target = -1, int target_card = -1);
 
     /**
      * Finishes current round and hands control over to the next player.
@@ -159,6 +177,9 @@ public:
      * Does not reply to pending card.
      */
     void proceed(Player * player);
+
+    /// Converts an error code into human-readable error message.
+    static string getErrorMessage(int code);
 };
 
 

@@ -1,6 +1,9 @@
 #include "../src/util/CsvParser.h"
 #include <assert.h>
 #include <cstring>
+#include <iostream>
+
+using namespace std;
 
 void testCsvParser() {
     try {
@@ -16,4 +19,6 @@ void testCsvParser() {
     assert(data[0][2] == "1");
     assert(data[0][3] == "role");
     assert(data[0][4] == "");
+    assert(data[0][16] == "");
+    assert(data[37][16] == "1");
 }

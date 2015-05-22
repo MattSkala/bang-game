@@ -16,11 +16,11 @@
  * JOIN\|username | OK | Joins the game with given username.
  * ADD_BOT | OK | Adds a bot player.
  * GET_PLAYERS | username1;username2;... | Returns a list of connected players.
- * GET_PLAYERS_INFO | username,life,character,role,on_turn,pending;... | Returns a list of players with game info.
+ * GET_PLAYERS_INFO | username,life,character,role,on_turn,pending,cards;... | Returns a list of players with game info.
  * START | OK | Starts the game.
  * GET_CARDS | originalname1;originalname2;... | Returns a list of cards in hand.
  * GET_PERMANENT_CARDS | username1:originalname1,originalname2;... | Returns lists of laid permanent cards.
- * PLAY_CARD\|position[\|target] | OK | Plays a card from hand with optional target.
+ * PLAY_CARD\|position\|target\|target_card | OK | Plays a card from hand with optional target.
  * DISCARD_CARD\|position | OK |  Discards a card from hand.
  * FINISH_ROUND | OK | Finishes current round.
  * PROCEED | OK | Does not reply to pending card.

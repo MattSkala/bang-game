@@ -10,7 +10,7 @@ GameController::GameController(Game & game, GameClient & client) : game_(game), 
 void GameController::updatePlayersInfo() {
     vector<vector<string>> players = client_.getPlayersInfo();
     for (vector<string> player : players) {
-        game_.updatePlayer(player[0], stoi(player[1]), player[2], player[3], stoi(player[4]), stoi(player[5]));
+        game_.updatePlayer(player[0], stoi(player[1]), player[2], player[3], stoi(player[4]), stoi(player[5]), stoi(player[6]));
     }
 
     if (game_.getMe()->isPending()) {
@@ -41,6 +41,13 @@ void GameController::update() {
     updateCards();
 }
 
+void GameController::playCard(int position, int target, int target_card) {
+    if ((error_ = client_.playCard(position, target, target_card)) != Game::SUCCESS) {
+        update();
+        renderBoard();
+    }
+}
+
 void GameController::actionInit() {
     updatePlayersInfo();
     updateCards();
@@ -48,8 +55,12 @@ void GameController::actionInit() {
     client_.addListener(listener_);
     renderBoard();
 
+    initInputHandler();
+}
 
+void GameController::initInputHandler() {
     int card_position;
+    int player_position;
 
     while (true) {
         string line;
@@ -93,28 +104,35 @@ void GameController::actionInit() {
                     state_ = STATE_PLAY_TARGET;
                     renderBoard();
                 } else {
-                    if (!client_.playCard(card_position)) {
-                        error_ = true;
-                        update();
-                        renderBoard();
-                    }
+                    playCard(card_position);
                 }
             } else {
                 renderBoard();
             }
         } else if (state_ == STATE_PLAY_TARGET) {
             char c;
-            int player_position;
             if (scanChar(line, c)
                 && (player_position = toupper(c) - 'A') >= 0 && player_position < (int) game_.getPlayers().size()) {
 
-                if (!client_.playCard(card_position, player_position)) {
-                    error_ = true;
-                    update();
+                if (game_.getMe()->getCards()[card_position]->isCardTargetable()) {
+                    state_ = STATE_PLAY_TARGET_CARD;
                     renderBoard();
+                } else {
+                    playCard(card_position, player_position);
                 }
             } else {
                 renderBoard();
+            }
+        } else if (state_ == STATE_PLAY_TARGET_CARD) {
+            int target_card_position;
+            if (scanInt(line, target_card_position)) {
+                if (target_card_position >= 0 && target_card_position < (int) game_.getPlayers()[player_position]->getPermanentCards().size()) {
+                    playCard(card_position, player_position, target_card_position);
+                } else {
+                    renderBoard();
+                }
+            } else {
+                playCard(card_position, player_position);
             }
         } else if (state_ == STATE_PENDING) {
             char c;
@@ -165,7 +183,8 @@ void GameController::renderBoard() {
             cout << player->getRole()->getName() + " ~ ";
         }
         cout << player->getCharacter()->getName();
-        cout << "  \u2665 " << player->getLife();
+        cout << "  \u2665 " << player->getLife() << "/" << player->getMaxLife();
+        cout << "  [] " << player->getCardsCount();
         cout << endl;
 
         vector<shared_ptr<PermanentCard>> cards = players[i]->getPermanentCards();
@@ -193,9 +212,9 @@ void GameController::renderBoard() {
         cout << endl << endl;
     }
 
-    if (error_) {
-        cout << "Tuto kartu nelze nyní zahrát." << endl << endl;
-        error_ = false;
+    if (error_ != Game::SUCCESS) {
+        cout << Game::getErrorMessage(error_) << endl << endl;
+        error_ = Game::SUCCESS;
     }
 
     if (state_ == STATE_ON_TURN) {
@@ -207,6 +226,8 @@ void GameController::renderBoard() {
         cout << "Číslo karty: ";
     } else if (state_ == STATE_PLAY_CARD) {
         cout << "Číslo karty: ";
+    } else if (state_ == STATE_PLAY_TARGET_CARD) {
+        cout << "Číslo karty nebo [Enter]: ";
     } else if (state_ == STATE_PLAY_TARGET) {
         cout << "Kód hráče: ";
     } else if (state_ == STATE_PENDING) {
@@ -220,7 +241,7 @@ void GameController::actionRefresh() {
 }
 
 bool GameController::onStreamEvent(vector<string> event) {
-    //cout << "stream event:" << event[0] << endl;
+    // cout << "onStreamEvent: " << event[0] << endl;
     if (event[0] == "NEXT_ROUND") {
         update();
         renderBoard();

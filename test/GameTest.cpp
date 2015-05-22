@@ -1,9 +1,13 @@
-#include "../src/Game.h"
-#include "../src/entity/PermanentCard.h"
 #include <unistd.h>
 #include <signal.h>
 #include <string>
 #include <iostream>
+#include "../src/Game.h"
+#include "../src/entity/PermanentCard.h"
+#include "../src/entity/GunCard.h"
+#include "../src/entity/BangCard.h"
+#include "../src/entity/DiscardCard.h"
+#include "../src/entity/DrawCard.h"
 
 using namespace std;
 
@@ -44,6 +48,71 @@ void testGameDistance() {
     assert(game.getDistance(a, 1) == 1);
 }
 
+void testGameUnlimitedBang() {
+    Game game;
+    Player * a = new Player();
+    Player * b = new Player();
+    game.addPlayer(a);
+    game.addPlayer(b);
+
+    shared_ptr<BangCard> bang = shared_ptr<BangCard>(new BangCard("Bang!", "", 2));
+    bang->setTargetDistance(true);
+    shared_ptr<GunCard> volcanic = shared_ptr<GunCard>(new GunCard("Volcanic", "", 1, 1));
+    volcanic->setUnlimitedBang(true);
+    a->addCard(bang);
+    a->addCard(bang);
+    a->addCard(volcanic);
+    a->layCard(2);
+
+    assert(game.playCard(a, 0, 1) == Game::SUCCESS);
+    assert(game.playCard(a, 0, 1) == Game::SUCCESS);
+}
+
+void testGameDiscardCard() {
+    Game game;
+    Player * a = new Player();
+    Player * b = new Player();
+    game.addPlayer(a);
+    game.addPlayer(b);
+
+    shared_ptr<GunCard> volcanic = shared_ptr<GunCard>(new GunCard("Volcanic", "", 1, 1));
+    shared_ptr<DiscardCard> discard = shared_ptr<DiscardCard>(new DiscardCard("Cat Balou", "", 1));
+    discard->setTargetAny(true);
+
+    a->addCard(discard);
+    b->addCard(volcanic);
+    b->layCard(0);
+    assert(b->getPermanentCards().size() == 1);
+    assert(a->getCards().size() == 1);
+    assert(game.playCard(a, 0, 1, 0) == Game::SUCCESS);
+    assert(b->getPermanentCards().size() == 0);
+    assert(a->getCards().size() == 0);
+}
+
+void testGameDrawCard() {
+    Game game;
+    Player * a = new Player();
+    Player * b = new Player();
+    game.addPlayer(a);
+    game.addPlayer(b);
+
+    shared_ptr<GunCard> volcanic = shared_ptr<GunCard>(new GunCard("Volcanic", "", 1, 1));
+    shared_ptr<DrawCard> draw = shared_ptr<DrawCard>(new DrawCard("Panic", "", 1, 1));
+    draw->setTargetDistance(true);
+
+    a->addCard(draw);
+    b->addCard(volcanic);
+    b->layCard(0);
+    assert(b->getPermanentCards().size() == 1);
+    assert(a->getCards().size() == 1);
+    assert(game.playCard(a, 0, 1, 0) == Game::SUCCESS);
+    assert(b->getPermanentCards().size() == 0);
+    assert(a->getCards().size() == 1);
+}
+
 void testGame() {
     testGameDistance();
+    testGameUnlimitedBang();
+    testGameDiscardCard();
+    testGameDrawCard();
 }

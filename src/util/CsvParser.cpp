@@ -39,7 +39,7 @@ vector<string> CsvParser::parseRow(string line) {
         if (line[i] == separator) {
             row.push_back(cell);
             cell.clear();
-        } else {
+        } else if (line[i] != '\r' && line[i] != '\n') {
             cell.push_back(line[i]);
         }
     }

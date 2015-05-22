@@ -4,6 +4,7 @@
 #include "Controller.h"
 #include "../Game.h"
 #include "../net/GameClient.h"
+#include "../net/GameServer.h"
 
 /// A controller for game screen.
 class GameController : public Controller {
@@ -24,20 +25,24 @@ class GameController : public Controller {
      */
     static const int STATE_PLAY_TARGET = 3;
     /**
+     * We are selecting target laid card position at previously selected player.
+     */
+    static const int STATE_PLAY_TARGET_CARD = 4;
+    /**
      * We are selecting card to discard.
      */
-    static const int STATE_DISCARD_CARD = 4;
+    static const int STATE_DISCARD_CARD = 5;
     /**
      * We have to reply to pending card.
      */
-    static const int STATE_PENDING = 5;
+    static const int STATE_PENDING = 6;
 
     Game & game_;
     GameClient & client_;
     function<bool(vector<string>)> listener_;
     bool onStreamEvent(vector<string> event);
     int state_ = GameController::STATE_WAIT;
-    bool error_ = false;
+    int error_ = Game::SUCCESS;
 
     shared_ptr<PlayableCard> last_card_;
     string last_card_player_;
@@ -47,6 +52,8 @@ class GameController : public Controller {
     void updatePlayersInfo();
     void updatePermanentCards();
     void updateCards();
+    void playCard(int position, int target = -1, int target_card = -1);
+    void initInputHandler();
 public:
     GameController(Game & game, GameClient & client);
 

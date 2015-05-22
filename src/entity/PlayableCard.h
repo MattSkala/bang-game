@@ -38,10 +38,13 @@ public:
     void setTargetSelf(bool target);
 
     /// Returns true if card is targeting other player when being played.
-    bool isTargetable();
+    bool isTargetable() const;
+
+    /// Returns true if card can target specific laid card.
+    virtual bool isCardTargetable() const;
 
     /// A card is played by player on target.
-    virtual bool play(Game * game, Player * player, int position, int target) = 0;
+    virtual int play(Game *game, Player *player, int position, int target, int target_card) = 0;
 
     /// A card effect is accepted by target.
     virtual bool proceed(Game * game, Player * player);
