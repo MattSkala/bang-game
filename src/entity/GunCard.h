@@ -16,6 +16,7 @@ public:
     int getDistance() const;
     void setUnlimitedBang(bool unlimited);
     bool hasUnlimitedBang() const;
+    virtual string print() const;
 };
 
 

@@ -24,3 +24,9 @@ int BeerCard::play(Game *game, Player *player, int position, int target, int tar
 
     return Game::SUCCESS;
 }
+
+string BeerCard::print() const {
+    string str = Card::print();
+    str += "  \u2665";
+    return str;
+}

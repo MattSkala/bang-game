@@ -18,3 +18,12 @@ string Card::getName() const {
 int Card::getCount() const {
     return count_;
 }
+
+string Card::print() const {
+    string str;
+    str += getName();
+    if (getName() != getOriginalName()) {
+        str += " (" + getOriginalName() + ")";
+    }
+    return str;
+}

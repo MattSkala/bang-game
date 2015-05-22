@@ -28,6 +28,9 @@ public:
     string getName() const;
 
     int getCount() const;
+
+    /// Returns human-readable name and symbolic description of card
+    virtual string print() const;
 };
 
 

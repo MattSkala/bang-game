@@ -14,6 +14,7 @@ public:
     virtual int play(Game *game, Player *player, int position, int target, int target_card);
     int getDistanceTweak() const;
     void setDistanceTweak(int distance);
+    virtual string print() const;
 };
 
 

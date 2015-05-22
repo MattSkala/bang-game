@@ -11,6 +11,7 @@ public:
     DiscardCard(string original_name, string name, int count);
     virtual int play(Game * game, Player * player, int position, int target, int target_card);
     virtual bool isCardTargetable() const;
+    virtual string print() const;
 };
 
 

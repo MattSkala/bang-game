@@ -27,3 +27,15 @@ int PermanentCard::getDistanceTweak() const {
 void PermanentCard::setDistanceTweak(int distance) {
     distance_tweak_ = distance;
 }
+
+string PermanentCard::print() const {
+    string str = Card::print();
+    if (distance_tweak_) {
+        str += "  ";
+        if (distance_tweak_ > 0) {
+            str += "+";
+        }
+        str += to_string(distance_tweak_);
+    }
+    return str;
+}

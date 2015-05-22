@@ -45,6 +45,22 @@ int DrawCard::play(Game *game, Player *player, int position, int target, int tar
     return Game::SUCCESS;
 }
 
+string DrawCard::print() const {
+    string str = Card::print();
+    str += "  ";
+    for (int i = 0; i < draw_count_; i++) {
+        str += "[]";
+    }
+    if (isTargetable()) {
+        if (target_distance_) {
+            str += "  \u2205 1";
+        } else if (target_any_) {
+            str += "  \u2205 \u221E";
+        }
+    }
+    return str;
+}
+
 bool DrawCard::isCardTargetable() const {
     return isTargetable();
 }

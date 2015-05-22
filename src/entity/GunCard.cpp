@@ -34,3 +34,12 @@ void GunCard::setUnlimitedBang(bool unlimited) {
 bool GunCard::hasUnlimitedBang() const {
     return unlimited_bang_;
 }
+
+string GunCard::print() const {
+    string str = Card::print();
+    str += "  \u2205 " + to_string(distance_);
+    if (hasUnlimitedBang()) {
+        str += "  \u221E";
+    }
+    return str;
+}

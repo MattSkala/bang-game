@@ -37,3 +37,9 @@ int DiscardCard::play(Game *game, Player *player, int position, int target, int 
 bool DiscardCard::isCardTargetable() const {
     return true;
 }
+
+string DiscardCard::print() const {
+    string str = Card::print();
+    str += "  [X]";
+    return str;
+}

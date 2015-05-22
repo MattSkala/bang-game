@@ -189,7 +189,7 @@ void GameController::renderBoard() {
 
         vector<shared_ptr<PermanentCard>> cards = players[i]->getPermanentCards();
         for (unsigned int j = 0; j < cards.size(); j++) {
-            cout << "    [" << j << "] " << cards[j]->getName() << " (" << cards[j]->getOriginalName() << ")" << endl;
+            cout << "    [" << j << "] " << cards[j]->print() << endl;
         }
     }
 
@@ -198,14 +198,14 @@ void GameController::renderBoard() {
     cout << "Karty na ruce:" << endl;
     vector<shared_ptr<PlayableCard>> cards = game_.getMe()->getCards();
     for (unsigned int i = 0; i < cards.size(); i++) {
-        cout << "[" << i << "] " << cards[i]->getName() << " (" << cards[i]->getOriginalName() << ")" << endl;
+        cout << "[" << i << "] " << cards[i]->print() << endl;
     }
 
     cout << endl;
 
     if (last_card_) {
         cout << "Poslední zahraná karta:" << endl;
-        cout << last_card_player_ << ": " << last_card_->getName() + " (" << last_card_->getOriginalName() + ")";
+        cout << last_card_player_ << ": " << last_card_->print();
         if (last_card_target_ >= 0) {
             cout << " -> " << game_.getPlayers()[last_card_target_]->getName();
         }
