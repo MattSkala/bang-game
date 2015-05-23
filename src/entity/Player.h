@@ -99,6 +99,11 @@ public:
     vector<shared_ptr<PlayableCard>> & getCards();
 
     /**
+     * Checks whether the player has beer card in hand.
+     */
+    bool hasBeerCard() const;
+
+    /**
      * Sets permanent cards.
      */
     void setPermanentCards(vector<shared_ptr<PermanentCard>> cards);

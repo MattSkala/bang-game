@@ -391,7 +391,6 @@ PlayableCard * Game::getPendingCard() {
 
 void Game::proceed(Player *player) {
     pending_card_->proceed(this, player);
-
     player->setPending(false);
 
     if (getPendingPlayersCount() == 0) {

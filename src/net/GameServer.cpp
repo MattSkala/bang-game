@@ -23,6 +23,7 @@ const string GameServer::SUCCESS = "OK";
 const string GameServer::ERROR = "ERROR";
 const string GameServer::ERROR_JOIN_NAME = "JOIN_NAME";
 const string GameServer::ERROR_JOIN_PLAYING = "JOIN_PLAYING";
+const string GameServer::ERROR_BEER_AVAILABLE = "BEER_AVAILABLE";
 
 const string GameServer::ERROR_ALREADY_RUNNING = "ALREADY_RUNNING";
 const string GameServer::ERROR_NOT_RUNNING = "NOT_RUNNING";
@@ -122,7 +123,7 @@ void GameServer::waitForConnection() {
             if (result) {
                 string res = processRequest(req, i);
                 sendResponse(connections_[i], res);
-                // cout << req << " -> " << res << endl;
+                cout << req << " -> " << res << endl;
             } else {
                 // client closed connection
                 handleUserLeave(it);
@@ -328,9 +329,21 @@ string GameServer::processRequest(string req, int connection) {
             sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target) + "|" + to_string(target_card));
         }
     } else if ("PROCEED" == args[0]) {
-        game_.proceed(player);
-        sendEvent("PROCEED|" + player->getName());
-        res = GameServer::SUCCESS;
+        if (player->getLife() > 0) {
+            game_.proceed(player);
+            sendEvent("PROCEED|" + player->getName());
+            res = GameServer::SUCCESS;
+
+            if (player->getLife() <= 0 && player->hasBeerCard()) {
+                player->setPending(true);
+            }
+        } else {
+            if (player->hasBeerCard()) {
+                res = GameServer::ERROR_BEER_AVAILABLE;
+            } else {
+                res = GameServer::ERROR;
+            }
+        }
     } else {
         res = "INVALID_REQUEST";
     }
@@ -346,7 +359,7 @@ void GameServer::sendResponse(int client_socket, string res) {
 }
 
 void GameServer::sendEvent(string event) {
-    // cout << "sendEvent: " << event << endl;
+    cout << "sendEvent: " << event << endl;
     for (unsigned int i = 0; i < stream_connections_.size(); i++) {
         sendResponse(stream_connections_[i], event + '$');
     }

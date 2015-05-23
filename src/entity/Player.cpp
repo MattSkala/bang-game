@@ -57,6 +57,16 @@ vector<shared_ptr<PlayableCard>>& Player::getCards() {
     return cards_;
 }
 
+bool Player::hasBeerCard() const {
+    bool has = false;
+    for (auto & card : cards_) {
+        if (card->getOriginalName() == "Birra") {
+            has = true;
+        }
+    }
+    return has;
+}
+
 void Player::setPermanentCards(vector<shared_ptr<PermanentCard>> cards) {
     permanents_ = cards;
 }

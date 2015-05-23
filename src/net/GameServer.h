@@ -150,6 +150,11 @@ public:
      */
     static const string ERROR_JOIN_PLAYING;
 
+    /**
+     * The response is returned when player is dead, but can be healed by beer.
+     */
+    static const string ERROR_BEER_AVAILABLE;
+
     /// Starts the game server.
     /**
      * It should be called in a separate process as it starts a blocking loop.

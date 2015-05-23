@@ -145,7 +145,9 @@ void GameController::initInputHandler() {
                     renderBoard();
                 } else if (toupper(c) == 'P') {
                     state_ = STATE_WAIT;
-                    client_.proceed();
+                    if (!client_.proceed()) {
+                        renderBoard();
+                    }
                 }
             }
         }
@@ -165,6 +167,10 @@ void GameController::renderBoard() {
 
         if (player->isPending()) {
             cout << "? ";
+        }
+
+        if (!player->isAlive()) {
+            cout << "\u2020 ";
         }
 
         if (player == game_.getPlayerOnTurn()) {
@@ -255,7 +261,7 @@ void GameController::actionRefresh() {
 }
 
 bool GameController::onStreamEvent(vector<string> event) {
-    // cout << "onStreamEvent: " << event[0] << endl;
+    cout << "onStreamEvent: " << event[0] << endl;
     if (event[0] == "NEXT_ROUND") {
         update();
         renderBoard();

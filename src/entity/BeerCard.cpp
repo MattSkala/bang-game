@@ -8,7 +8,7 @@ using namespace std;
 BeerCard::BeerCard(string original_name, string name, int count) : InstantCard(original_name, name, count) { }
 
 int BeerCard::play(Game *game, Player *player, int position, int target, int target_card) {
-    if (player->isPending()) {
+    if (player->isPending() && (player->getLife() > 0 || target_others_)) {
         return Game::ERROR_INVALID_REACTION;
     }
 
@@ -25,6 +25,14 @@ int BeerCard::play(Game *game, Player *player, int position, int target, int tar
     }
 
     game->discardCard(player, position);
+
+    if (player->isPending()) {
+        player->setPending(false);
+
+        if (game->getPendingPlayersCount() == 0) {
+            game->setPendingCard(nullptr);
+        }
+    }
 
     return Game::SUCCESS;
 }
