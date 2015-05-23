@@ -196,6 +196,8 @@ vector<Player *> Game::getPlayersByRole(string role) {
 vector<string> Game::getWinners() {
     vector<string> winners;
 
+    if (getPlayers().size() < 4) return winners;
+
     Player * sheriff = getPlayersByRole(RoleCard::SHERIFF)[0];
     Player * renegate = getPlayersByRole(RoleCard::RENEGATE)[0];
     vector<Player *> deputies = getPlayersByRole(RoleCard::DEPUTY);
@@ -365,16 +367,18 @@ void Game::finishRound() {
         player->setPlayedBang(false);
     }
 
-    if (players_.back() == player_on_turn_) {
-        player_on_turn_ = players_.front();
-    } else {
-        for (unsigned int i = 0; i < players_.size(); i++) {
-            if (players_[i] == player_on_turn_) {
-                player_on_turn_ = players_[i + 1];
-                break;
+    do {
+        if (players_.back() == player_on_turn_) {
+            player_on_turn_ = players_.front();
+        } else {
+            for (unsigned int i = 0; i < players_.size(); i++) {
+                if (players_[i] == player_on_turn_) {
+                    player_on_turn_ = players_[i + 1];
+                    break;
+                }
             }
         }
-    }
+    } while (!player_on_turn_->isAlive());
 }
 
 void Game::setPendingCard(PlayableCard *card) {
@@ -414,7 +418,7 @@ string Game::getErrorMessage(int code) {
         case ERROR_INVALID_MISS:
             return "Tuto kartu lze zahrát pouze jako reakci na útok.";
         case ERROR_INVALID_REACTION:
-            return "Nyní lze zahrát pouze kartu reagující na útok.";
+            return "Nyní lze zahrát pouze kartu Vedle.";
         case ERROR_UNKNOWN_CARD:
             return "Neplatná definice karty.";
         default:

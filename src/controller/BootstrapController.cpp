@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <thread>
 #include "BootstrapController.h"
+#include "../Exception.h"
 #include "../net/GameServer.h"
 
 
@@ -20,13 +21,17 @@ void BootstrapController::renderWelcome() {
     cout << "o [P]řipojit se k existující hře" << endl;
 
     while (true) {
-        int c = getchar();
-        if (toupper(c) == 'Z') {
-            actionHostGame();
-            break;
-        } else if (toupper(c) == 'P') {
-            actionJoinGame();
-            break;
+        string s;
+        getline(cin, s);
+        char c;
+        if (scanChar(s, c)) {
+            if (toupper(c) == 'Z') {
+                actionHostGame();
+                break;
+            } else if (toupper(c) == 'P') {
+                actionJoinGame();
+                break;
+            }
         }
     }
 }
@@ -36,7 +41,7 @@ string BootstrapController::renderNameInput() {
     printLogo();
     cout << "Vaše jméno: " << endl;
     string name;
-    cin >> name;
+    getline(cin, name);
 
     return name;
 }
@@ -97,15 +102,7 @@ void BootstrapController::renderServerInput() {
     clearScreen();
     printLogo();
     cout << "Zadejte IP adresu serveru:" << endl;
-    string ip;
-    cin >> ip;
-    try {
-        client_.connect(ip, GameServer::PORT);
-    } catch (const char *err) {
-        cout << err << endl;
-        system("read");
-        renderServerInput();
-    }
+    getline(cin, server_ip_);
 }
 
 void BootstrapController::actionHostGame() {
@@ -135,12 +132,16 @@ void BootstrapController::actionHostGame() {
     renderPlayersList();
 
     while (true) {
-        int c = getchar();
-        if (toupper(c) == 'A') {
-            actionAddBot();
-        } else if (toupper(c) == 'S') {
-            actionStartGame();
-            break;
+        string s;
+        getline(cin, s);
+        char c;
+        if (scanChar(s, c)) {
+            if (toupper(c) == 'A') {
+                actionAddBot();
+            } else if (toupper(c) == 'S') {
+                actionStartGame();
+                break;
+            }
         }
     }
 }
@@ -151,8 +152,20 @@ void BootstrapController::actionAddBot() {
 
 void BootstrapController::actionJoinGame() {
     string my_name = renderNameInput();
-    renderServerInput();
-    client_.join(my_name);
+
+    while (server_ip_.size() == 0) {
+        renderServerInput();
+        try {
+            client_.connect(server_ip_, GameServer::PORT);
+            client_.join(my_name);
+        } catch (Exception err) {
+            cerr << err.getMessage() << endl;
+            server_ip_.clear();
+            string tmp;
+            getline(cin, tmp);
+        }
+    }
+
     client_.addListener(listener_);
 
     vector<string> names = client_.getPlayers();
@@ -179,7 +192,8 @@ void BootstrapController::actionStartGame() {
     if (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
         cout << "Pro spuštění hry je potřeba " << GameServer::MIN_PLAYERS << " – " << GameServer::MAX_PLAYERS << " hráčů." << endl;
         while (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
-            getchar();
+            string s;
+            getline(cin, s);
         }
     }
 

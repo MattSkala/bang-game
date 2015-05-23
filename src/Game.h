@@ -19,7 +19,7 @@ private:
     vector<shared_ptr<PlayableCard>> cards_;
     list<shared_ptr<PlayableCard>> pack_;
     vector<Player *> players_;
-    Player * player_on_turn_;
+    Player * player_on_turn_ = NULL;
     Player * me_;
 
     PlayableCard * pending_card_ = NULL;

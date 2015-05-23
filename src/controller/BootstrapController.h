@@ -15,6 +15,7 @@ class BootstrapController : public Controller {
 private:
     Game & game_;
     GameClient & client_;
+    string server_ip_;
     pid_t & server_pid_;
     function<bool(vector<string>)> listener_;
     bool started_ = false;

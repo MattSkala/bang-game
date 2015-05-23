@@ -5,13 +5,22 @@
 #include <string.h>
 #include <iostream>
 #include <sstream>
-#include "GameClient.h"
-#include "../util/utils.h"
 #include "GameServer.h"
+#include "../Exception.h"
+#include "../util/utils.h"
+#include "GameClient.h"
 
 using namespace std;
 
 #define BUFFER_SIZE 1024
+
+const string GameClient::ERROR_DISCONNECT = "DISCONNECT";
+const string GameClient::ERROR_GETADDRINFO = "GETADDRINFO";
+const string GameClient::ERROR_SOCKET = "SOCKET";
+const string GameClient::ERROR_CONNECT = "CONNECT";
+const string GameClient::ERROR_RECV = "RECV";
+const string GameClient::ERROR_SUBSCRIBE = "SUBSCRIBE";
+
 
 GameClient::GameClient() {
 }
@@ -30,18 +39,15 @@ int GameClient::connectSocket(string host, int port) {
 
     int status;
     if ((status = getaddrinfo(host.c_str(), to_string(port).c_str(), &hints, &res)) != 0) {
-        perror(gai_strerror(status));
-        throw "getaddrinfo error";
+        throw Exception(ERROR_GETADDRINFO, gai_strerror(status));
     }
 
     if ((sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) {
-        perror(strerror(errno));
-        throw "socket error";
+        throw Exception(ERROR_SOCKET, strerror(errno));
     }
 
     if (::connect(sock, res->ai_addr, res->ai_addrlen) == -1) {
-        perror(strerror(errno));
-        throw "connect error";
+        throw Exception(ERROR_CONNECT, strerror(errno));
     }
 
     freeaddrinfo(res);
@@ -97,8 +103,7 @@ bool GameClient::receiveResponse(string & res, int socket) {
 
     if ((received = recv(socket, buffer, BUFFER_SIZE, 0)) == -1) {
         if (isConnected()) {
-            perror(strerror(errno));
-            throw "recv error";
+            throw Exception(ERROR_RECV, strerror(errno));
         } else {
             return false;
         }
@@ -121,14 +126,14 @@ void GameClient::stream(string host, int port) {
         bool status = receiveResponse(res, stream_socket_);
 
         if (!status || res != GameServer::SUCCESS) {
-            throw "stream subscription failed";
+            throw Exception(ERROR_SUBSCRIBE, "Cannot subscribe to stream server.");
         }
 
         while (stream_socket_ > 0) {
             string res;
 
             if (!receiveResponse(res, stream_socket_)) {
-                throw "disconnect";
+                throw Exception(ERROR_DISCONNECT, "Server disconnected.");
             }
 
             vector<string> events = explode(res, '$');
@@ -141,9 +146,9 @@ void GameClient::stream(string host, int port) {
                 }
             }
         }
-    } catch (const char *err) {
+    } catch (Exception err) {
         if (isConnected()) {
-            cerr << "stream error:" << err << endl;
+            cerr << err.getMessage() << endl;
         }
     }
 }
@@ -152,7 +157,7 @@ void GameClient::addListener(function<bool(vector<string>)> f) {
     listeners_.push_back(f);
 }
 
-bool GameClient::removeListener(function<bool(vector<string>)> f) {
+bool GameClient::removeListener(function<bool(vector<string>)> & f) {
     for (unsigned int i = 0; i < listeners_.size(); i++) {
         if (listeners_[i].target<bool(vector<string>)>() == f.target<bool(vector<string>)>()) {
             listeners_.erase(listeners_.begin() + i);
@@ -164,7 +169,17 @@ bool GameClient::removeListener(function<bool(vector<string>)> f) {
 
 bool GameClient::join(string username) {
     string res;
-    return sendRequest("JOIN|" + username, res) && res == GameServer::SUCCESS;
+    if (sendRequest("JOIN|" + username, res)) {
+        if (res == GameServer::SUCCESS) {
+            return true;
+        } else if (res == GameServer::ERROR_JOIN_NAME) {
+            throw Exception(GameServer::ERROR_JOIN_NAME, "Hráč s tímto jménem již existuje.");
+        } else if (res == GameServer::ERROR_JOIN_PLAYING) {
+            throw Exception(GameServer::ERROR_JOIN_PLAYING, "Hra byla již spuštěna.");
+        }
+        return false;
+    }
+    return false;
 }
 
 bool GameClient::addBot() {

@@ -15,6 +15,13 @@ using namespace std;
 /// A game client for communication with GameServer.
 class GameClient {
 private:
+    static const string ERROR_DISCONNECT;
+    static const string ERROR_GETADDRINFO;
+    static const string ERROR_SOCKET;
+    static const string ERROR_CONNECT;
+    static const string ERROR_RECV;
+    static const string ERROR_SUBSCRIBE;
+
     int stream_socket_;
     int api_socket_;
     vector<function<bool(vector<string>)>> listeners_;
@@ -75,7 +82,7 @@ public:
     /**
      * \param f The listener previously registered with GameClient::addListener.
      */
-    bool removeListener(function<bool(vector<string>)> f);
+    bool removeListener(function<bool(vector<string>)> & f);
 
     ///@{
     /// \name API Requests

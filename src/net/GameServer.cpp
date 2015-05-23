@@ -13,13 +13,29 @@
 #include <signal.h>
 #include <sstream>
 #include <string.h>
-#include "GameServer.h"
+#include "../Exception.h"
 #include "../util/utils.h"
+#include "GameServer.h"
 
 #define BUFFER_SIZE 1024
 
 const string GameServer::SUCCESS = "OK";
 const string GameServer::ERROR = "ERROR";
+const string GameServer::ERROR_JOIN_NAME = "JOIN_NAME";
+const string GameServer::ERROR_JOIN_PLAYING = "JOIN_PLAYING";
+
+const string GameServer::ERROR_ALREADY_RUNNING = "ALREADY_RUNNING";
+const string GameServer::ERROR_NOT_RUNNING = "NOT_RUNNING";
+const string GameServer::ERROR_SETSOCKOPT = "SETSOCKOPT";
+const string GameServer::ERROR_BIND = "BIND";
+const string GameServer::ERROR_LISTEN = "LISTEN";
+const string GameServer::ERROR_ACCEPT = "ACCEPT";
+const string GameServer::ERROR_RECV = "RECV";
+const string GameServer::ERROR_SEND = "SEND";
+const string GameServer::ERROR_SUBSCRIBE = "SUBSCRIBE";
+const string GameServer::ERROR_GETADDRINFO = "GETADDRINFO";
+const string GameServer::ERROR_SOCKET = "SOCKET";
+
 
 GameServer::GameServer(Game &game) : game_(game) { }
 
@@ -29,7 +45,7 @@ GameServer::~GameServer() {
 
 void GameServer::start() {
     if (running_) {
-        throw "server already running";
+        throw Exception(ERROR_ALREADY_RUNNING, "Server is already running.");
     }
 
     struct addrinfo * servinfo = getServerInfo();
@@ -38,22 +54,20 @@ void GameServer::start() {
     // Allow reusing address to prevent "Address already in use" error
     int yes = 1;
     if (setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-        throw "setsockopt error";
+        throw Exception(ERROR_SETSOCKOPT, strerror(errno));
     }
 
     // Bind a socket to a port on our local address
     if (::bind(socket_, servinfo->ai_addr, servinfo->ai_addrlen) == -1) {
-        perror(strerror(errno));
         close(socket_);
-        throw "bind error";
+        throw Exception(ERROR_BIND, strerror(errno));
     }
 
     // Free address info – not needed anymore
     freeaddrinfo(servinfo);
 
     if (listen(socket_, GameServer::MAX_PLAYERS) == -1) {
-        perror(strerror(errno));
-        throw "listen error";
+        throw Exception(ERROR_LISTEN, strerror(errno));
     }
 
     running_ = true;
@@ -101,8 +115,8 @@ void GameServer::waitForConnection() {
             bool result = false;
             try {
                 result = receiveRequest(connections_[i], req);
-            } catch (const char *ex) {
-                cout << ex;
+            } catch (Exception ex) {
+                cerr << ex.getMessage() << endl;
             }
 
             if (result) {
@@ -161,9 +175,7 @@ void GameServer::acceptNewConnection() {
     int client_socket = accept(socket_, (struct sockaddr *) &their_addr, &sin_size);
 
     if (client_socket == -1) {
-        perror(strerror(errno));
-        perror("accept error");
-        return;
+        throw Exception(ERROR_ACCEPT, strerror(errno));
     }
 
     connections_.push_back(client_socket);
@@ -177,8 +189,7 @@ bool GameServer::receiveRequest(int client_socket, string & req) {
     int received = 0;
 
     if ((received = recv(client_socket, buffer, BUFFER_SIZE, 0)) == -1) {
-        perror(strerror(errno));
-        throw "recv error";
+        throw Exception(ERROR_RECV, strerror(errno));
     }
 
     if (received == 0) {
@@ -198,13 +209,19 @@ string GameServer::processRequest(string req, int connection) {
     vector<string> args = explode(req, '|');
 
     if ("JOIN" == args[0]) {
-        // add user
-        player = new Player();
-        player->setName(args[1]);
-        game_.addPlayer(player);
-        players_[socket] = player;
-        sendEvent("JOIN|" + args[1]);
-        res = GameServer::SUCCESS;
+        if (game_.getPlayerOnTurn() != NULL) {
+            res = GameServer::ERROR_JOIN_PLAYING;
+        } else if (game_.getPlayer(args[1]) != NULL) {
+            res = GameServer::ERROR_JOIN_NAME;
+        } else {
+            // add user
+            player = new Player();
+            player->setName(args[1]);
+            game_.addPlayer(player);
+            players_[socket] = player;
+            sendEvent("JOIN|" + args[1]);
+            res = GameServer::SUCCESS;
+        }
     } else if ("GET_PLAYERS" == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
@@ -324,8 +341,7 @@ string GameServer::processRequest(string req, int connection) {
 void GameServer::sendResponse(int client_socket, string res) {
     // send response
     if (send(client_socket, res.c_str(), res.size(), 0) == -1) {
-        perror("send error");
-        throw "send error";
+        throw Exception(ERROR_SEND, strerror(errno));
     }
 }
 
@@ -345,7 +361,7 @@ struct addrinfo * GameServer::getServerInfo() {
     hints.ai_flags = AI_PASSIVE;
 
     if (getaddrinfo(NULL, to_string(GameServer::PORT).c_str(), &hints, &res) != 0) {
-        throw "getaddrinfo error";
+        throw Exception(ERROR_GETADDRINFO, strerror(errno));
     }
 
     return res;
@@ -354,15 +370,14 @@ struct addrinfo * GameServer::getServerInfo() {
 int GameServer::getSocket(struct addrinfo * servinfo) {
     int socket_fd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
     if (socket_fd == -1) {
-        perror(strerror(errno));
-        throw "socket error";
+        throw Exception(ERROR_SOCKET, strerror(errno));
     }
     return socket_fd;
 }
 
 void GameServer::stop() {
     if (!running_) {
-        throw "server not running";
+        throw Exception(ERROR_NOT_RUNNING, "Server is not running.");
     }
 
     running_ = false;

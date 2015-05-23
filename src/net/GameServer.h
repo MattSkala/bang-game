@@ -42,6 +42,18 @@
  */
 class GameServer {
 private:
+    static const string ERROR_ALREADY_RUNNING;
+    static const string ERROR_NOT_RUNNING;
+    static const string ERROR_SETSOCKOPT;
+    static const string ERROR_BIND;
+    static const string ERROR_LISTEN;
+    static const string ERROR_ACCEPT;
+    static const string ERROR_RECV;
+    static const string ERROR_SEND;
+    static const string ERROR_SUBSCRIBE;
+    static const string ERROR_GETADDRINFO;
+    static const string ERROR_SOCKET;
+
     /**
      * Game state.
      */
@@ -124,9 +136,19 @@ public:
     static const string SUCCESS;
 
     /**
-     * The response that is returned by server on error.
+     * The response is returned by server on error.
      */
     static const string ERROR;
+
+    /**
+     * The response is returned when joining with duplicate name.
+     */
+    static const string ERROR_JOIN_NAME;
+
+    /**
+     * The response is returned when joining when the game already started.
+     */
+    static const string ERROR_JOIN_PLAYING;
 
     /// Starts the game server.
     /**

@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include "Exception.h"
 #include "Application.h"
 
 
@@ -23,8 +24,8 @@ int main(int argc, char * argv[]) {
 
     try {
         Application().init(argv[1]);
-    } catch (const char *err) {
-        cerr << err;
+    } catch (Exception err) {
+        cerr << err.getMessage() << endl;
         return EXIT_FAILURE;
     }
 
