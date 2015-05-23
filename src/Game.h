@@ -132,6 +132,16 @@ public:
     Player * getPlayerOnTurn();
 
     /**
+     * Returns players with specific role.
+     */
+    vector<Player *> getPlayersByRole(string role);
+
+    /**
+     * Gets winning roles if game is over.
+     */
+    vector<string> getWinners();
+
+    /**
      * Computes a distance between two players.
      */
     int getDistance(Player *player, int target) const;

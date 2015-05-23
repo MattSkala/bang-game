@@ -1,4 +1,5 @@
 #include <iostream>
+#include "../util/utils.h"
 #include "GameController.h"
 
 using namespace std;
@@ -13,7 +14,9 @@ void GameController::updatePlayersInfo() {
         game_.updatePlayer(player[0], stoi(player[1]), player[2], player[3], stoi(player[4]), stoi(player[5]), stoi(player[6]));
     }
 
-    if (game_.getMe()->isPending()) {
+    if (winners_.size() > 0) {
+        state_ = STATE_GAME_OVER;
+    } else if (game_.getMe()->isPending()) {
         state_ = STATE_PENDING;
     } else if (game_.getPlayerOnTurn() == game_.getMe() && game_.getPendingPlayersCount() == 0) {
         state_ = STATE_ON_TURN;
@@ -217,6 +220,8 @@ void GameController::renderBoard() {
         error_ = Game::SUCCESS;
     }
 
+    // cout << "state:" << state_ << endl;
+
     if (state_ == STATE_ON_TURN) {
         cout << "[Z]ahrát kartu" << endl;
         cout << "[U]končit kolo" << endl;
@@ -233,6 +238,15 @@ void GameController::renderBoard() {
     } else if (state_ == STATE_PENDING) {
         cout << "[Z]ahrát kartu" << endl;
         cout << "[P]okračovat" << endl;
+    } else if (state_ == STATE_GAME_OVER) {
+        cout << "Hra skončila. Výherce: ";
+        for (unsigned int i = 0; i < winners_.size(); i++) {
+            cout << game_.getPlayersByRole(winners_[i])[0]->getRole()->getName();
+            if (i < winners_.size() - 1) {
+                cout << ", ";
+            }
+        }
+        cout << endl;
     }
 }
 
@@ -252,6 +266,13 @@ bool GameController::onStreamEvent(vector<string> event) {
         update();
         renderBoard();
     } else if (event[0] == "PROCEED") {
+        update();
+        renderBoard();
+    } else if (event[0] == "GAME_OVER") {
+        cout << "winners:" << event[1] << endl;
+        winners_ = explode(event[1], ';');
+        cout << "winners size: " << winners_.size() << endl;
+
         update();
         renderBoard();
     }

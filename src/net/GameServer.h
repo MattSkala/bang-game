@@ -38,6 +38,7 @@
  * START | The game was started by the host.
  * NEXT_ROUND | The next player is on turn.
  * PLAY_CARD\|username\|originalname[\|options...] | The card was played.
+ * GAME_OVER\|role1;role2;... | The game has ended. Returns winning roles.
  */
 class GameServer {
 private:

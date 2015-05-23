@@ -183,6 +183,58 @@ Player * Game::getPlayerOnTurn() {
     return player_on_turn_;
 }
 
+vector<Player *> Game::getPlayersByRole(string role) {
+    vector<Player *> players;
+    for (Player * player : players_) {
+        if (player->getRole()->getOriginalName() == role) {
+            players.push_back(player);
+        }
+    }
+    return players;
+}
+
+vector<string> Game::getWinners() {
+    vector<string> winners;
+
+    Player * sheriff = getPlayersByRole(RoleCard::SHERIFF)[0];
+    Player * renegate = getPlayersByRole(RoleCard::RENEGATE)[0];
+    vector<Player *> deputies = getPlayersByRole(RoleCard::DEPUTY);
+    vector<Player *> outlaws = getPlayersByRole(RoleCard::OUTLAW);
+
+    bool deputies_dead = true;
+    bool outlaws_dead = true;
+
+    for (Player * player : deputies) {
+        if (player->isAlive()) {
+            deputies_dead = false;
+            break;
+        }
+    }
+
+    for (Player * player : outlaws) {
+        if (player->isAlive()) {
+            outlaws_dead = false;
+            break;
+        }
+    }
+
+    if (sheriff->isAlive()) {
+        if (outlaws_dead && !renegate->isAlive()) {
+            winners.push_back(RoleCard::SHERIFF);
+            if (deputies.size() > 0) {
+                winners.push_back(RoleCard::DEPUTY);
+            }
+        }
+    } else {
+        if (deputies_dead && outlaws_dead) {
+            winners.push_back(RoleCard::RENEGATE);
+        } else {
+            winners.push_back(RoleCard::OUTLAW);
+        }
+    }
+
+    return winners;
+}
 
 int Game::getPlayerPosition(Player *player) const {
     int position = 0;
@@ -365,6 +417,7 @@ string Game::getErrorMessage(int code) {
             return "Nyní lze zahrát pouze kartu reagující na útok.";
         case ERROR_UNKNOWN_CARD:
             return "Neplatná definice karty.";
+        default:
+            return "Nastala neznámá chyba.";
     }
-    return "Nastala neznámá chyba.";
 }

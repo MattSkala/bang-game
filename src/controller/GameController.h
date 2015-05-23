@@ -36,6 +36,10 @@ class GameController : public Controller {
      * We have to reply to pending card.
      */
     static const int STATE_PENDING = 6;
+    /**
+     * The game has ended.
+     */
+    static const int STATE_GAME_OVER = 7;
 
     Game & game_;
     GameClient & client_;
@@ -43,6 +47,7 @@ class GameController : public Controller {
     bool onStreamEvent(vector<string> event);
     int state_ = GameController::STATE_WAIT;
     int error_ = Game::SUCCESS;
+    vector<string> winners_;
 
     shared_ptr<PlayableCard> last_card_;
     string last_card_player_;

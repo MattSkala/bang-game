@@ -227,7 +227,8 @@ string GameServer::processRequest(string req, int connection) {
             res += ',';
             if (players[i]->getRole()->getOriginalName() == RoleCard::SHERIFF
                 || !players[i]->isAlive()
-                || player->getName() == players[i]->getName()) {
+                || player->getName() == players[i]->getName()
+                || game_.getWinners().size() > 0) {
                 res += players[i]->getRole()->getOriginalName();
             } else {
                 res += '?';
@@ -278,10 +279,22 @@ string GameServer::processRequest(string req, int connection) {
             }
         }
     } else if ("FINISH_ROUND" == req) {
-        game_.finishRound();
-        game_.drawCard(game_.getPlayerOnTurn());
-        game_.drawCard(game_.getPlayerOnTurn());
-        sendEvent("NEXT_ROUND");
+        auto winners = game_.getWinners();
+        if (winners.size() > 0) {
+            string roles;
+            for (unsigned int i = 0; i < winners.size(); i++) {
+                roles += winners[i];
+                if (i < winners.size() - 1) {
+                    roles += ";";
+                }
+            }
+            sendEvent("GAME_OVER|" + roles);
+        } else {
+            game_.finishRound();
+            game_.drawCard(game_.getPlayerOnTurn());
+            game_.drawCard(game_.getPlayerOnTurn());
+            sendEvent("NEXT_ROUND");
+        }
         res = GameServer::SUCCESS;
     } else if ("DISCARD_CARD" == args[0]) {
         int position = stoi(args[1]);

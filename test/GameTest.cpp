@@ -110,9 +110,55 @@ void testGameDrawCard() {
     assert(a->getCards().size() == 1);
 }
 
+void testGameOver() {
+    Game game;
+    Player * a = new Player();
+    Player * b = new Player();
+    Player * c = new Player();
+    Player * d = new Player();
+    game.addPlayer(a);
+    game.addPlayer(b);
+    game.addPlayer(c);
+    game.addPlayer(d);
+
+    RoleCard * sheriff = new RoleCard(RoleCard::SHERIFF, "", 1);
+    RoleCard * renegate = new RoleCard(RoleCard::RENEGATE, "", 1);
+    RoleCard * outlaw = new RoleCard(RoleCard::OUTLAW, "", 2);
+    CharacterCard * character = new CharacterCard("Paul Regret", "", 1);
+    character->setLife(3);
+
+    a->setRole(sheriff);
+    b->setRole(renegate);
+    c->setRole(outlaw);
+    d->setRole(outlaw);
+    a->setCharacter(character);
+    b->setCharacter(character);
+    c->setCharacter(character);
+    d->setCharacter(character);
+    a->setLife(a->getMaxLife());
+    b->setLife(b->getMaxLife());
+    c->setLife(c->getMaxLife());
+    d->setLife(d->getMaxLife());
+
+    assert(game.getWinners().size() == 0);
+    a->setLife(0);
+    assert(game.getWinners().size() == 1);
+    assert(game.getWinners()[0] == RoleCard::OUTLAW);
+    c->setLife(0);
+    d->setLife(0);
+    assert(game.getWinners().size() == 1);
+    assert(game.getWinners()[0] == RoleCard::RENEGATE);
+
+    delete sheriff;
+    delete renegate;
+    delete outlaw;
+    delete character;
+}
+
 void testGame() {
     testGameDistance();
     testGameUnlimitedBang();
     testGameDiscardCard();
     testGameDrawCard();
+    testGameOver();
 }

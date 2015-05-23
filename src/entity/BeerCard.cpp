@@ -8,6 +8,10 @@ using namespace std;
 BeerCard::BeerCard(string original_name, string name, int count) : InstantCard(original_name, name, count) { }
 
 int BeerCard::play(Game *game, Player *player, int position, int target, int target_card) {
+    if (player->isPending()) {
+        return Game::ERROR_INVALID_REACTION;
+    }
+
     if (target_self_) {
         player->increaseLife();
     }
