@@ -251,13 +251,29 @@ int Game::getPlayerPosition(Player *player) const {
 
 int Game::getDistance(Player *player, int target) const {
     int position = getPlayerPosition(player);
-    int d1 = abs(position - target);
-    int d2;
-    if (position > target) {
-        d2 = (int) players_.size() - position + target;
-    } else {
-        d2 = (int) players_.size() + position - target;
+
+    int lower = position < target ? position : target;
+    int upper = position > target ? position : target;
+
+    int d1 = 0;
+    for (int i = lower; i < upper; i++) {
+        if (players_[i]->isAlive()) {
+            d1++;
+        }
     }
+
+    int d2 = 0;
+    for (int i = upper; i < (int) players_.size(); i++) {
+        if (players_[i]->isAlive()) {
+            d2++;
+        }
+    }
+    for (int i = 0; i < lower; i++) {
+        if (players_[i]->isAlive()) {
+            d2++;
+        }
+    }
+
     int d = d1 < d2 ? d1 : d2;
 
     // Appaloosa

@@ -21,6 +21,23 @@ void testGameDistance() {
     game.addPlayer(b);
     game.addPlayer(c);
     game.addPlayer(d);
+    a->setLife(2);
+    b->setLife(2);
+    c->setLife(2);
+    d->setLife(2);
+
+    assert(game.getPlayers().size() == 4);
+    assert(game.getDistance(a, 1) == 1);
+    assert(game.getDistance(a, 2) == 2);
+    assert(game.getDistance(a, 3) == 1);
+
+    b->setLife(0);
+
+    assert(game.getPlayers().size() == 4);
+    assert(game.getDistance(a, 2) == 1);
+    assert(game.getDistance(a, 3) == 1);
+
+    b->setLife(2);
 
     assert(game.getPlayers().size() == 4);
     assert(game.getDistance(a, 1) == 1);

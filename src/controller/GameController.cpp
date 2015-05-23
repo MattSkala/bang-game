@@ -261,7 +261,7 @@ void GameController::actionRefresh() {
 }
 
 bool GameController::onStreamEvent(vector<string> event) {
-    cout << "onStreamEvent: " << event[0] << endl;
+    // cout << "onStreamEvent: " << event[0] << endl;
     if (event[0] == "NEXT_ROUND") {
         update();
         renderBoard();

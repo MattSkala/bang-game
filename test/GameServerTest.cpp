@@ -1,5 +1,6 @@
 #include "../src/net/GameServer.h"
 #include "../src/net/GameClient.h"
+#include "../src/Exception.h"
 #include <unistd.h>
 #include <signal.h>
 #include <string>
@@ -11,8 +12,8 @@ void testGameServer() {
             Game game;
             GameServer server(game);
             server.start();
-        } catch (const char *err) {
-            cout << "server error:" << err << endl;
+        } catch (Exception err) {
+            cout << "server error: " << err.getMessage() << endl;
         }
         exit(0);
     }
@@ -31,8 +32,8 @@ void testGameServer() {
         assert(players[0] == "Matt");
 
         client.disconnect();
-    } catch (const char *err) {
-        cout << "client error:" << err << endl;
+    } catch (Exception err) {
+        cout << "client error: " << err.getMessage() << endl;
     }
 
     kill(pid, SIGTERM);

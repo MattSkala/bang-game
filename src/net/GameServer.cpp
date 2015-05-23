@@ -123,7 +123,7 @@ void GameServer::waitForConnection() {
             if (result) {
                 string res = processRequest(req, i);
                 sendResponse(connections_[i], res);
-                cout << req << " -> " << res << endl;
+                // cout << req << " -> " << res << endl;
             } else {
                 // client closed connection
                 handleUserLeave(it);
@@ -359,7 +359,7 @@ void GameServer::sendResponse(int client_socket, string res) {
 }
 
 void GameServer::sendEvent(string event) {
-    cout << "sendEvent: " << event << endl;
+    // cout << "sendEvent: " << event << endl;
     for (unsigned int i = 0; i < stream_connections_.size(); i++) {
         sendResponse(stream_connections_[i], event + '$');
     }
