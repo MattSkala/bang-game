@@ -71,6 +71,8 @@ void testGameUnlimitedBang() {
     Player * b = new Player();
     game.addPlayer(a);
     game.addPlayer(b);
+    a->setLife(3);
+    b->setLife(3);
 
     shared_ptr<BangCard> bang = shared_ptr<BangCard>(new BangCard("Bang!", "", 2));
     bang->setTargetDistance(true);
@@ -91,6 +93,8 @@ void testGameDiscardCard() {
     Player * b = new Player();
     game.addPlayer(a);
     game.addPlayer(b);
+    a->setLife(1);
+    b->setLife(1);
 
     shared_ptr<GunCard> volcanic = shared_ptr<GunCard>(new GunCard("Volcanic", "", 1, 1));
     shared_ptr<DiscardCard> discard = shared_ptr<DiscardCard>(new DiscardCard("Cat Balou", "", 1));
@@ -112,6 +116,8 @@ void testGameDrawCard() {
     Player * b = new Player();
     game.addPlayer(a);
     game.addPlayer(b);
+    a->setLife(1);
+    b->setLife(1);
 
     shared_ptr<GunCard> volcanic = shared_ptr<GunCard>(new GunCard("Volcanic", "", 1, 1));
     shared_ptr<DrawCard> draw = shared_ptr<DrawCard>(new DrawCard("Panic", "", 1, 1));
