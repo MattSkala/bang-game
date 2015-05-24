@@ -25,6 +25,8 @@ protected:
      * \return True on success, false if input validation failed.
      */
     bool scanChar(string in, char & res);
+public:
+    virtual ~Controller();
 };
 
 

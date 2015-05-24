@@ -8,6 +8,7 @@
 
 using namespace std;
 
+const string BootstrapController::LOCALHOST = "127.0.0.1";
 
 BootstrapController::BootstrapController(Game & game, GameClient & client, pid_t & server_pid) : game_(game), client_(client), server_pid_(server_pid) {
     listener_ = std::bind(&BootstrapController::onStreamEvent, this, std::placeholders::_1);
@@ -98,11 +99,13 @@ bool BootstrapController::onStreamEvent(vector<string> event) {
     return false;
 }
 
-void BootstrapController::renderServerInput() {
+string BootstrapController::renderServerInput() {
     clearScreen();
     printLogo();
     cout << "Zadejte IP adresu serveru:" << endl;
-    getline(cin, server_ip_);
+    string server_ip;
+    getline(cin, server_ip);
+    return server_ip;
 }
 
 void BootstrapController::actionHostGame() {
@@ -125,7 +128,7 @@ void BootstrapController::actionHostGame() {
     usleep(100 * 1000);
 
     // connect to server
-    client_.connect("127.0.0.1", GameServer::PORT);
+    client_.connect(LOCALHOST, GameServer::PORT);
     client_.join(game_.getMe()->getName());
     client_.addListener(listener_);
 
@@ -156,14 +159,15 @@ void BootstrapController::actionAddBot() {
 void BootstrapController::actionJoinGame() {
     string my_name = renderNameInput();
 
-    while (server_ip_.size() == 0) {
-        renderServerInput();
+    string server_ip;
+    while (server_ip.size() == 0) {
+        server_ip = renderServerInput();
         try {
-            client_.connect(server_ip_, GameServer::PORT);
+            client_.connect(server_ip, GameServer::PORT);
             client_.join(my_name);
         } catch (Exception err) {
             cerr << err.getMessage() << endl;
-            server_ip_.clear();
+            server_ip.clear();
             string tmp;
             getline(cin, tmp);
         }

@@ -13,7 +13,6 @@
 #include <signal.h>
 #include <sstream>
 #include <string.h>
-#include "../Application.h"
 #include "../Exception.h"
 #include "../util/utils.h"
 #include "../entity/Bot.h"
@@ -38,6 +37,27 @@ const string GameServer::ERROR_SEND = "SEND";
 const string GameServer::ERROR_SUBSCRIBE = "SUBSCRIBE";
 const string GameServer::ERROR_GETADDRINFO = "GETADDRINFO";
 const string GameServer::ERROR_SOCKET = "SOCKET";
+
+const string GameServer::REQ_SUBSCRIBE = "SUBSCRIBE";
+const string GameServer::REQ_JOIN = "JOIN";
+const string GameServer::REQ_ADD_BOT = "ADD_BOT";
+const string GameServer::REQ_GET_PLAYERS = "GET_PLAYERS";
+const string GameServer::REQ_GET_PLAYERS_INFO = "GET_PLAYERS_INFO";
+const string GameServer::REQ_START = "START";
+const string GameServer::REQ_GET_CARDS = "GET_CARDS";
+const string GameServer::REQ_GET_PERMANENT_CARDS = "GET_PERMANENT_CARDS";
+const string GameServer::REQ_PLAY_CARD = "PLAY_CARD";
+const string GameServer::REQ_DISCARD_CARD = "DISCARD_CARD";
+const string GameServer::REQ_FINISH_ROUND = "FINISH_ROUND";
+const string GameServer::REQ_PROCEED = "PROCEED";
+
+const string GameServer::EVENT_JOIN = "JOIN";
+const string GameServer::EVENT_LEAVE = "LEAVE";
+const string GameServer::EVENT_START = "START";
+const string GameServer::EVENT_NEXT_ROUND = "NEXT_ROUND";
+const string GameServer::EVENT_PROCEED = "PROCEED";
+const string GameServer::EVENT_PLAY_CARD = "PLAY_CARD";
+const string GameServer::EVENT_GAME_OVER = "GAME_OVER";
 
 
 GameServer::GameServer(Game &game) : game_(game) { }
@@ -125,9 +145,7 @@ void GameServer::waitForConnection() {
             if (result) {
                 string res = processRequest(req, i);
                 sendResponse(connections_[i], res);
-                if (Application::DEBUG) {
-                    cout << req << " -> " << res << endl;
-                }
+                // cout << req << " -> " << res << endl;
             } else {
                 // client closed connection
                 handleUserLeave(it);
@@ -167,7 +185,7 @@ void GameServer::handleUserLeave(vector<int>::iterator it) {
         players_.erase(socket);
 
         // send event
-        sendEvent("LEAVE|" + name);
+        sendEvent(EVENT_LEAVE + "|" + name);
     }
 }
 
@@ -213,7 +231,7 @@ string GameServer::processRequest(string req, int connection) {
 
     vector<string> args = explode(req, '|');
 
-    if ("JOIN" == args[0]) {
+    if (REQ_JOIN == args[0]) {
         if (game_.getPlayerOnTurn() != NULL) {
             res = GameServer::ERROR_JOIN_PLAYING;
         } else if (game_.getPlayer(args[1]) != NULL) {
@@ -224,10 +242,10 @@ string GameServer::processRequest(string req, int connection) {
             player->setName(args[1]);
             game_.addPlayer(player);
             players_[socket] = player;
-            sendEvent("JOIN|" + args[1]);
+            sendEvent(EVENT_JOIN + "|" + args[1]);
             res = GameServer::SUCCESS;
         }
-    } else if ("ADD_BOT" == args[0]) {
+    } else if (REQ_ADD_BOT == args[0]) {
         if (game_.getBotsCount() >= MAX_BOTS) {
             res = GameServer::ERROR_BOT_LIMIT;
         } else {
@@ -239,10 +257,10 @@ string GameServer::processRequest(string req, int connection) {
                 player->setName(names[rand() % names_size]);
             } while (game_.getPlayer(player->getName()) != NULL);
             game_.addPlayer(player);
-            sendEvent("JOIN|" + player->getName());
+            sendEvent(EVENT_JOIN + "|" + player->getName());
             res = GameServer::SUCCESS;
         }
-    } else if ("GET_PLAYERS" == req) {
+    } else if (REQ_GET_PLAYERS == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
         for (unsigned int i = 0; i < players.size(); i++) {
@@ -252,7 +270,7 @@ string GameServer::processRequest(string req, int connection) {
                 res += ';';
             }
         }
-    } else if ("GET_PLAYERS_INFO" == req) {
+    } else if (REQ_GET_PLAYERS_INFO == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
         for (unsigned int i = 0; i < players.size(); i++) {
@@ -281,16 +299,16 @@ string GameServer::processRequest(string req, int connection) {
                 res += ';';
             }
         }
-    } else if ("SUBSCRIBE" == req) {
+    } else if (REQ_SUBSCRIBE == req) {
         stream_connections_.push_back(connections_[connection]);
         res = GameServer::SUCCESS;
-    } else if ("START" == req) {
+    } else if (REQ_START == req) {
         game_.initGame();
         game_.drawCard(game_.getPlayerOnTurn());
         game_.drawCard(game_.getPlayerOnTurn());
-        sendEvent("START");
+        sendEvent(EVENT_START);
         res = GameServer::SUCCESS;
-    } else if ("GET_CARDS" == req) {
+    } else if (REQ_GET_CARDS == req) {
         vector<shared_ptr<PlayableCard>> cards = player->getCards();
         res = "";
         for (unsigned int i = 0; i < cards.size(); i++) {
@@ -299,7 +317,7 @@ string GameServer::processRequest(string req, int connection) {
                 res += ";";
             }
         }
-    } else if ("GET_PERMANENT_CARDS" == req) {
+    } else if (REQ_GET_PERMANENT_CARDS == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
         for (unsigned int i = 0; i < players.size(); i++) {
@@ -315,21 +333,21 @@ string GameServer::processRequest(string req, int connection) {
                 res += ";";
             }
         }
-    } else if ("FINISH_ROUND" == req) {
+    } else if (REQ_FINISH_ROUND == req) {
         res = finishRound();
-    } else if ("DISCARD_CARD" == args[0]) {
+    } else if (REQ_DISCARD_CARD == args[0]) {
         int position = stoi(args[1]);
         game_.discardCard(player, position);
         res = GameServer::SUCCESS;
-    } else if ("PLAY_CARD" == args[0]) {
+    } else if (REQ_PLAY_CARD == args[0]) {
         int position = stoi(args[1]);
         int target = stoi(args[2]);
         int target_card = stoi(args[3]);
         res = playCard(player, position, target, target_card);
-    } else if ("PROCEED" == args[0]) {
+    } else if (REQ_PROCEED == args[0]) {
         res = proceed(player);
     } else {
-        res = "INVALID_REQUEST";
+        res = ERROR;
     }
 
     return res;
@@ -354,7 +372,7 @@ string GameServer::playCard(Player * player, int position, int target, int targe
     int status = game_.playCard(player, position, target, target_card);
     string res = to_string(status);
     if (status == Game::SUCCESS) {
-        sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target) + "|" + to_string(target_card));
+        sendEvent(EVENT_PLAY_CARD + "|" + player->getName() + "|" + card_name + "|" + to_string(target) + "|" + to_string(target_card));
     }
     for (Player * player : game_.getPendingPlayers()) {
         Bot * bot = dynamic_cast<Bot *>(player);
@@ -369,7 +387,7 @@ string GameServer::proceed(Player * player) {
     string res;
     if (player->getLife() > 0) {
         game_.proceed(player);
-        sendEvent("PROCEED|" + player->getName());
+        sendEvent(EVENT_PROCEED + "|" + player->getName());
         res = to_string(Game::SUCCESS);
 
         if (player->getLife() <= 0 && player->hasBeerCard()) {
@@ -395,12 +413,12 @@ string GameServer::finishRound() {
                 roles += ";";
             }
         }
-        sendEvent("GAME_OVER|" + roles);
+        sendEvent(EVENT_GAME_OVER + "|" + roles);
     } else {
         game_.finishRound();
         game_.drawCard(game_.getPlayerOnTurn());
         game_.drawCard(game_.getPlayerOnTurn());
-        sendEvent("NEXT_ROUND");
+        sendEvent(EVENT_NEXT_ROUND);
 
         Bot * bot = dynamic_cast<Bot *>(game_.getPlayerOnTurn());
         if (bot) {
@@ -418,9 +436,7 @@ void GameServer::sendResponse(int client_socket, string res) {
 }
 
 void GameServer::sendEvent(string event) {
-    if (Application::DEBUG) {
-        cout << "sendEvent: " << event << endl;
-    }
+    // cout << "sendEvent: " << event << endl;
     for (unsigned int i = 0; i < stream_connections_.size(); i++) {
         sendResponse(stream_connections_[i], event + '$');
     }

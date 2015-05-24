@@ -7,7 +7,6 @@
 #include "BeerCard.h"
 #include "../net/GameServer.h"
 #include "../Game.h"
-#include "../Application.h"
 
 using namespace std;
 
@@ -72,13 +71,6 @@ bool Bot::getBestMove(Game * game, int & position, int & target, int & target_ca
     auto & cards = getCards();
     auto & players = game->getPlayers();
 
-    if (Application::DEBUG) {
-        cout << "Cards:" << endl;
-        for (auto card : cards) {
-            cout << card->print() << endl;
-        }
-    }
-
     for (int i = 0; i < (int) cards.size(); i++) {
         for (int j = 0; j < (int) players.size(); j++) {
             for (int k = -1; k < (int) players[j]->getPermanentCards().size(); k++) {
@@ -113,13 +105,6 @@ bool Bot::getBestMove(Game * game, int & position, int & target, int & target_ca
             if (!cards[i]->isTargetable()) {
                 break;
             }
-        }
-    }
-
-    if (Application::DEBUG) {
-        cout << "Moves:" << endl;
-        for (auto move : moves) {
-            cout << move[0] << "|" << move[1] << "|" << move[2] << "|" << move[3] << "|" << move[4] << endl;
         }
     }
 

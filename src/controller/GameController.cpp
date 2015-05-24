@@ -257,28 +257,22 @@ void GameController::renderBoard() {
     }
 }
 
-void GameController::actionRefresh() {
-    renderBoard();
-}
-
 bool GameController::onStreamEvent(vector<string> event) {
     // cout << "onStreamEvent: " << event[0] << endl;
-    if (event[0] == "NEXT_ROUND") {
+    if (event[0] == GameServer::EVENT_NEXT_ROUND) {
         update();
         renderBoard();
-    } else if (event[0] == "PLAY_CARD") {
+    } else if (event[0] == GameServer::EVENT_PLAY_CARD) {
         last_card_player_ = event[1];
         last_card_ = game_.getCard(event[2]);
         last_card_target_ = stoi(event[3]);
         update();
         renderBoard();
-    } else if (event[0] == "PROCEED") {
+    } else if (event[0] == GameServer::EVENT_PROCEED) {
         update();
         renderBoard();
-    } else if (event[0] == "GAME_OVER") {
-        cout << "winners:" << event[1] << endl;
+    } else if (event[0] == GameServer::EVENT_GAME_OVER) {
         winners_ = explode(event[1], ';');
-        cout << "winners size: " << winners_.size() << endl;
 
         update();
         renderBoard();

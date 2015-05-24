@@ -121,7 +121,7 @@ bool GameClient::receiveResponse(string & res, int socket) {
 void GameClient::stream(string host, int port) {
     try {
         stream_socket_ = connectSocket(host, port);
-        sendRequest("SUBSCRIBE", stream_socket_);
+        sendRequest(GameServer::REQ_SUBSCRIBE, stream_socket_);
         string res;
         bool status = receiveResponse(res, stream_socket_);
 
@@ -169,7 +169,7 @@ bool GameClient::removeListener(function<bool(vector<string>)> & f) {
 
 bool GameClient::join(string username) {
     string res;
-    if (sendRequest("JOIN|" + username, res)) {
+    if (sendRequest(GameServer::REQ_JOIN + "|" + username, res)) {
         if (res == GameServer::SUCCESS) {
             return true;
         } else if (res == GameServer::ERROR_JOIN_NAME) {
@@ -184,18 +184,18 @@ bool GameClient::join(string username) {
 
 bool GameClient::addBot() {
     string res;
-    return sendRequest("ADD_BOT", res) && res == GameServer::SUCCESS;
+    return sendRequest(GameServer::REQ_ADD_BOT, res) && res == GameServer::SUCCESS;
 }
 
 vector<string> GameClient::getPlayers() {
     string res;
-    sendRequest("GET_PLAYERS", res);
+    sendRequest(GameServer::REQ_GET_PLAYERS, res);
     return explode(res, ';');
 }
 
 vector<vector<string>> GameClient::getPlayersInfo() {
     string res;
-    sendRequest("GET_PLAYERS_INFO", res);
+    sendRequest(GameServer::REQ_GET_PLAYERS_INFO, res);
     vector<string> users = explode(res, ';');
     vector<vector<string>> players;
     for (string user : users) {
@@ -207,19 +207,19 @@ vector<vector<string>> GameClient::getPlayersInfo() {
 
 bool GameClient::startGame() {
     string res;
-    return sendRequest("START", res) && res == GameServer::SUCCESS;
+    return sendRequest(GameServer::REQ_START, res) && res == GameServer::SUCCESS;
 }
 
 vector<string> GameClient::getCards() {
     string res;
-    sendRequest("GET_CARDS", res);
+    sendRequest(GameServer::REQ_GET_CARDS, res);
     return explode(res, ';');
 }
 
 map<string, vector<string>> GameClient::getPermanentCards() {
     map<string, vector<string>> players;
     string res;
-    sendRequest("GET_PERMANENT_CARDS", res);
+    sendRequest(GameServer::REQ_GET_PERMANENT_CARDS, res);
     vector<string> players_list = explode(res, ';');
     for (string player : players_list) {
         vector<string> player_parts = explode(player, ':');
@@ -235,17 +235,17 @@ map<string, vector<string>> GameClient::getPermanentCards() {
 
 bool GameClient::finishRound() {
     string res;
-    return sendRequest("FINISH_ROUND", res) && res == GameServer::SUCCESS;
+    return sendRequest(GameServer::REQ_FINISH_ROUND, res) && res == GameServer::SUCCESS;
 }
 
 bool GameClient::discardCard(int position) {
     string res;
-    return sendRequest("DISCARD_CARD|" + to_string(position), res) && res == GameServer::SUCCESS;
+    return sendRequest(GameServer::REQ_DISCARD_CARD + "|" + to_string(position), res) && res == GameServer::SUCCESS;
 }
 
 int GameClient::playCard(int position, int target, int target_card) {
     string res;
-    int status = sendRequest("PLAY_CARD|" + to_string(position) + "|" + to_string(target) + "|" + to_string(target_card), res);
+    int status = sendRequest(GameServer::REQ_PLAY_CARD + "|" + to_string(position) + "|" + to_string(target) + "|" + to_string(target_card), res);
     if (!status) {
         return Game::ERROR_UNKNOWN;
     }
@@ -254,7 +254,7 @@ int GameClient::playCard(int position, int target, int target_card) {
 
 int GameClient::proceed() {
     string res;
-    if (!sendRequest("PROCEED", res)) {
+    if (!sendRequest(GameServer::REQ_PROCEED, res)) {
         return Game::ERROR_UNKNOWN;
     }
     return stoi(res);

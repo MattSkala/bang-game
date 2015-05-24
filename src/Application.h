@@ -15,8 +15,6 @@ private:
 public:
     ~Application();
 
-    static const bool DEBUG = false;
-
     /// Initializes the application and shows welcome screen.
     void init(string filename);
 };

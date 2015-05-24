@@ -5,6 +5,8 @@
 using namespace std;
 
 
+Controller::~Controller() { }
+
 void Controller::clearScreen() {
     #ifdef WINDOWS
         system("cls");
@@ -12,7 +14,6 @@ void Controller::clearScreen() {
         system ("clear");
     #endif
 }
-
 
 void Controller::printLogo() {
     cout << "  ____                      _ \n"

@@ -13,9 +13,9 @@ using namespace std;
 /// A controller for welcome screen, creating a game and connecting players to it.
 class BootstrapController : public Controller {
 private:
+    static const string LOCALHOST;
     Game & game_;
     GameClient & client_;
-    string server_ip_;
     pid_t & server_pid_;
     function<bool(vector<string>)> listener_;
     bool started_ = false;
@@ -25,7 +25,7 @@ public:
     void renderWelcome();
     string renderNameInput();
     void renderPlayersList();
-    void renderServerInput();
+    string renderServerInput();
     void actionHostGame();
     void actionAddBot();
     void actionJoinGame();

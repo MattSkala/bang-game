@@ -36,7 +36,6 @@ private:
     Game & game_;
     GameClient & client_;
     function<bool(vector<string>)> listener_;
-    bool onStreamEvent(vector<string> event);
     int state_ = GameController::STATE_WAIT;
     int error_ = Game::SUCCESS;
     vector<string> winners_;
@@ -45,23 +44,31 @@ private:
     string last_card_player_;
     int last_card_target_;
 
+    /// Fecthes current game state from the server.
     void update();
+
     void updatePlayersInfo();
+
     void updatePermanentCards();
+
     void updateCards();
+
+    /// Renders game board with players list and cards.
+    void renderBoard();
+
+    /// Sends play request to server and updates error state with response.
     void playCard(int position, int target = -1, int target_card = -1);
+
+    /// Initializes blocking input handler loop
     void initInputHandler();
+
+    /// Handles incoming event from stream
+    bool onStreamEvent(vector<string> event);
 public:
     GameController(Game & game, GameClient & client);
 
     /// Fetches card in hand and other players characters.
     void actionInit();
-
-    /// Fetches current game state from server.
-    void actionRefresh();
-
-    /// Renders game board with players list and cards.
-    void renderBoard();
 };
 
 

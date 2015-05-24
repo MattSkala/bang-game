@@ -39,6 +39,7 @@
  * LEAVE\|username | The player left the game.
  * START | The game was started by the host.
  * NEXT_ROUND | The next player is on turn.
+ * PROCEED | The player does not reply to pending card.
  * PLAY_CARD\|username\|originalname[\|options...] | The card was played.
  * GAME_OVER\|role1;role2;... | The game has ended. Returns winning roles.
  */
@@ -129,6 +130,27 @@ public:
 
     /// Bot limit is reached.
     static const string ERROR_BOT_LIMIT;
+
+    static const string REQ_SUBSCRIBE;
+    static const string REQ_JOIN;
+    static const string REQ_ADD_BOT;
+    static const string REQ_GET_PLAYERS;
+    static const string REQ_GET_PLAYERS_INFO;
+    static const string REQ_START;
+    static const string REQ_GET_CARDS;
+    static const string REQ_GET_PERMANENT_CARDS;
+    static const string REQ_PLAY_CARD;
+    static const string REQ_DISCARD_CARD;
+    static const string REQ_FINISH_ROUND;
+    static const string REQ_PROCEED;
+
+    static const string EVENT_JOIN;
+    static const string EVENT_LEAVE;
+    static const string EVENT_START;
+    static const string EVENT_NEXT_ROUND;
+    static const string EVENT_PROCEED;
+    static const string EVENT_PLAY_CARD;
+    static const string EVENT_GAME_OVER;
 
     /// Starts the game server.
     /**
