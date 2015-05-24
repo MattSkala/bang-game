@@ -11,25 +11,18 @@ class Player;
 /// A playable card.
 class PlayableCard : public Card {
 protected:
-
-public:
-    /**
-     * Can target any player.
-     */
+    /// Can target any player.
     bool target_any_ = false;
-    /**
-     * Targets all other players.
-     */
-    bool target_others_ = false;
-    /**
-     * Can target a player within distance.
-     */
-    bool target_distance_ = false;
-    /**
-     * Targets the playing player.
-     */
-    bool target_self_ = false;
 
+    /// Targets all other players.
+    bool target_others_ = false;
+
+    /// Can target a player within distance.
+    bool target_distance_ = false;
+
+    /// Targets the playing player.
+    bool target_self_ = false;
+public:
     PlayableCard(string original_name, string name, int count);
 
     void setTargetAny(bool target);

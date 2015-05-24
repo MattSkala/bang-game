@@ -34,12 +34,30 @@ vector<Player *>& Game::getPlayers() {
 
 vector<Player *> Game::getPendingPlayers() {
     vector<Player *> pending;
-    for (Player *item : players_) {
+    for (Player * item : players_) {
         if (item->isPending()) {
             pending.push_back(item);
         }
     }
     return pending;
+}
+
+vector<Player *> Game::getOpponents(Player * player) {
+    vector<Player *> opponents;
+    for (Player * item : players_) {
+        if (item != player) {
+            if (player->getRole()->getOriginalName() == RoleCard::OUTLAW
+                && item->getRole()->getOriginalName() == RoleCard::SHERIFF) {
+                opponents.push_back(item);
+            } else if (player->getRole()->getOriginalName() == RoleCard::RENEGATE) {
+                opponents.push_back(item);
+            } else if (player->getRole()->getOriginalName() == RoleCard::DEPUTY
+                       && item->getRole()->getOriginalName() != RoleCard::SHERIFF) {
+                opponents.push_back(item);
+            }
+        }
+    }
+    return opponents;
 }
 
 int Game::getBotsCount() const {
@@ -104,7 +122,7 @@ void Game::assignRoles() {
         int renegate_position;
         do {
             renegate_position = rand() % (int) players_.size();
-        } while (renegate_position == sheriff_position || dynamic_cast<Bot *>(players_[renegate_position]));
+        } while (renegate_position == sheriff_position);
         players_[renegate_position]->setRole(renegate);
     }
 
@@ -462,9 +480,11 @@ string Game::getErrorMessage(int code) {
 int Game::computeUtility(Player * player) const {
     int utility = 0;
 
-    utility += player->getLife() * 10;
-    utility += (int) player->getPermanentCards().size() * 5;
-    utility += (int) player->getCards().size();
+    if (player->isAlive()) {
+        utility += player->getLife() * 10;
+        utility += (int) player->getPermanentCards().size() * 5;
+        utility += (int) player->getCards().size();
+    }
 
     return utility;
 }

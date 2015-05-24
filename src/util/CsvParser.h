@@ -14,7 +14,7 @@ private:
     vector<string> parseRow(string line);
 public:
     /**
-     * Parses a file into vectors.
+     * \brief Parses a file into vectors.
      * \param filename The path to file which should be parsed.
      * \param ignore_first_line Whether the first line is a comment and should be ignored.
      * \return Vector of vectors representing rows and columns.

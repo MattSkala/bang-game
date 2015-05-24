@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <sstream>
 #include <string.h>
+#include "../Application.h"
 #include "../Exception.h"
 #include "../util/utils.h"
 #include "../entity/Bot.h"
@@ -124,7 +125,9 @@ void GameServer::waitForConnection() {
             if (result) {
                 string res = processRequest(req, i);
                 sendResponse(connections_[i], res);
-                // cout << req << " -> " << res << endl;
+                if (Application::DEBUG) {
+                    cout << req << " -> " << res << endl;
+                }
             } else {
                 // client closed connection
                 handleUserLeave(it);
@@ -225,7 +228,7 @@ string GameServer::processRequest(string req, int connection) {
             res = GameServer::SUCCESS;
         }
     } else if ("ADD_BOT" == args[0]) {
-        if (game_.getBotsCount() >= 2) {
+        if (game_.getBotsCount() >= MAX_BOTS) {
             res = GameServer::ERROR_BOT_LIMIT;
         } else {
             // add bot
@@ -415,7 +418,9 @@ void GameServer::sendResponse(int client_socket, string res) {
 }
 
 void GameServer::sendEvent(string event) {
-    // cout << "sendEvent: " << event << endl;
+    if (Application::DEBUG) {
+        cout << "sendEvent: " << event << endl;
+    }
     for (unsigned int i = 0; i < stream_connections_.size(); i++) {
         sendResponse(stream_connections_[i], event + '$');
     }

@@ -14,9 +14,10 @@ private:
     pid_t server_pid_ = 0;
 public:
     ~Application();
-    /**
-     * Initializes the application and shows welcome screen.
-     */
+
+    static const bool DEBUG = false;
+
+    /// Initializes the application and shows welcome screen.
     void init(string filename);
 };
 

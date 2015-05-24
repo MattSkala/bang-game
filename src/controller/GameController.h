@@ -8,37 +8,29 @@
 
 /// A controller for game screen.
 class GameController : public Controller {
-    /**
-     * Another player is playing, we are waiting...
-     */
+private:
+    /// Another player is playing, we are waiting...
     static const int STATE_WAIT = 0;
-    /**
-     * We are on turn. What shall we do?
-     */
+
+    /// We are on turn. What shall we do?
     static const int STATE_ON_TURN = 1;
-    /**
-     * We are about to play a card.
-     */
+
+    /// We are about to play a card.
     static const int STATE_PLAY_CARD = 2;
-    /**
-     * We are selecting target for previously selected card.
-     */
+
+    /// We are selecting target for previously selected card.
     static const int STATE_PLAY_TARGET = 3;
-    /**
-     * We are selecting target laid card position at previously selected player.
-     */
+
+    /// We are selecting target laid card position at previously selected player.
     static const int STATE_PLAY_TARGET_CARD = 4;
-    /**
-     * We are selecting card to discard.
-     */
+
+    /// We are selecting card to discard.
     static const int STATE_DISCARD_CARD = 5;
-    /**
-     * We have to reply to pending card.
-     */
+
+    /// We have to reply to pending card.
     static const int STATE_PENDING = 6;
-    /**
-     * The game has ended.
-     */
+
+    /// The game has ended.
     static const int STATE_GAME_OVER = 7;
 
     Game & game_;
@@ -62,19 +54,13 @@ class GameController : public Controller {
 public:
     GameController(Game & game, GameClient & client);
 
-    /**
-     * Fetches card in hand and other players characters.
-     */
+    /// Fetches card in hand and other players characters.
     void actionInit();
 
-    /**
-     * Fetches current game state from server.
-     */
+    /// Fetches current game state from server.
     void actionRefresh();
 
-    /**
-     * Renders game board with players list and cards.
-     */
+    /// Renders game board with players list and cards.
     void renderBoard();
 };
 

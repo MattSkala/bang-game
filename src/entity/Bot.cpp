@@ -7,6 +7,7 @@
 #include "BeerCard.h"
 #include "../net/GameServer.h"
 #include "../Game.h"
+#include "../Application.h"
 
 using namespace std;
 
@@ -44,13 +45,15 @@ void Bot::reply(GameServer * server, Game * game) {
         }
     }
 
-    if (miss >= 0) {
-        server->playCard(this, miss, -1, -1);
-    } else if (beer >= 0) {
-        server->playCard(this, beer, -1, -1);
-    } else {
-        server->proceed(this);
+    if (miss >= 0 && server->playCard(this, miss, -1, -1) == to_string(Game::SUCCESS)) {
+        return;
     }
+
+    if (beer >= 0 && server->playCard(this, beer, -1, -1) == to_string(Game::SUCCESS)) {
+        return;
+    }
+
+    server->proceed(this);
 }
 
 void Bot::discardExcessCards(Game * game) {
@@ -62,28 +65,40 @@ void Bot::discardExcessCards(Game * game) {
 
 bool Bot::getBestMove(Game * game, int & position, int & target, int & target_card) {
     set<vector<int>, bool(*)(vector<int>, vector<int>)> moves([](vector<int> l, vector<int> r) {
-        // Maximize own utility and minimize sheriff's utility
+        // Maximize own utility and minimize opponent's utility
         return l[0] > r[0] || l[1] < r[1];
     });
 
     auto & cards = getCards();
     auto & players = game->getPlayers();
 
+    if (Application::DEBUG) {
+        cout << "Cards:" << endl;
+        for (auto card : cards) {
+            cout << card->print() << endl;
+        }
+    }
+
     for (int i = 0; i < (int) cards.size(); i++) {
         for (int j = 0; j < (int) players.size(); j++) {
             for (int k = -1; k < (int) players[j]->getPermanentCards().size(); k++) {
                 Game state = game->clone();
-                Player *me = state.getPlayer(getName());
-                Player *sheriff = state.getPlayersByRole(RoleCard::SHERIFF)[0];
+                Player * me = state.getPlayer(getName());
 
                 if (state.playCard(me, i, j, k) == Game::SUCCESS) {
-                    for (Player *player : state.getPendingPlayers()) {
+                    for (Player * player : state.getPendingPlayers()) {
                         state.proceed(player);
+                    }
+
+                    int opponent_utility = 0;
+                    vector<Player *> opponents = state.getOpponents(me);
+                    for (Player * opponent : opponents) {
+                        opponent_utility += state.computeUtility(opponent);
                     }
 
                     vector<int> move(5);
                     move[0] = state.computeUtility(me);
-                    move[1] = state.computeUtility(sheriff);
+                    move[1] = opponent_utility;
                     move[2] = i;
                     move[3] = cards[i]->isTargetable() ? j : -1;
                     move[4] = k;
@@ -98,6 +113,13 @@ bool Bot::getBestMove(Game * game, int & position, int & target, int & target_ca
             if (!cards[i]->isTargetable()) {
                 break;
             }
+        }
+    }
+
+    if (Application::DEBUG) {
+        cout << "Moves:" << endl;
+        for (auto move : moves) {
+            cout << move[0] << "|" << move[1] << "|" << move[2] << "|" << move[3] << "|" << move[4] << endl;
         }
     }
 

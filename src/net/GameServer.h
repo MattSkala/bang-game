@@ -56,49 +56,28 @@ private:
     static const string ERROR_GETADDRINFO;
     static const string ERROR_SOCKET;
 
-    /**
-     * Game state.
-     */
+    /// Game state.
     Game & game_;
 
-    /**
-     * True if the server is running.
-     */
+    /// True if the server is running.
     bool running_ = false;
 
-    /**
-     * A listenable server socket.
-     */
+    /// A listenable server socket.
     int socket_;
 
-    /**
-     * All active socket connections.
-     */
+    /// All active socket connections.
     vector<int> connections_;
 
-    /**
-     * Socket connections subscribed to stream.
-     */
+    /// Socket connections subscribed to stream.
     vector<int> stream_connections_;
 
-    /**
-     * An API socket to player map.
-     */
+    /// An API socket to player map.
     map<int, Player*> players_;
 
-    /**
-     * A thread for running AI.
-     */
-    thread * bot_thread_;
-
-    /**
-     * Gets address info for localhost and server port.
-     */
+    /// Gets address info for localhost and server port.
     struct addrinfo * getServerInfo();
 
-    /**
-     * Returns socket descriptor for provided address.
-     */
+    /// Returns socket descriptor for provided address.
     int getSocket(struct addrinfo * servinfo);
 
     void waitForConnection();
@@ -113,9 +92,7 @@ private:
 
     void handleUserLeave(vector<int>::iterator it);
 
-    /**
-     * Sends an event notification to all connected clients.
-     */
+    /// Sends an event notification to all connected clients.
     void sendEvent(string event);
 
     void startBot(Bot * bot);
@@ -126,44 +103,31 @@ public:
 
     ~GameServer();
 
-    /**
-     * The port server is listening on.
-     */
+    /// The port server is listening on.
     static const int PORT = 7768;
 
-    /**
-     * Min count of players that should be connected before starting a game.
-     */
+    /// Min count of players that should be connected before starting a game.
     static const int MIN_PLAYERS = 4;
 
-    /**
-     * Max count of players that are able to join the game.
-     */
+    /// Max count of players that are able to join the game.
     static const int MAX_PLAYERS = 7;
 
-    /**
-     * The response that is returned by server on successful response-less request.
-     */
+    /// Max count of bots.
+    static const int MAX_BOTS = 3;
+
+    /// The response that is returned by server on successful response-less request.
     static const string SUCCESS;
 
-    /**
-     * The response is returned by server on error.
-     */
+    /// The response is returned by server on error.
     static const string ERROR;
 
-    /**
-     * Joining with duplicate name.
-     */
+    /// Joining with duplicate name.
     static const string ERROR_JOIN_NAME;
 
-    /**
-     * Joining when the game already started.
-     */
+    /// Joining when the game already started.
     static const string ERROR_JOIN_PLAYING;
 
-    /**
-     * Bot limit is reached.
-     */
+    /// Bot limit is reached.
     static const string ERROR_BOT_LIMIT;
 
     /// Starts the game server.

@@ -28,25 +28,19 @@ private:
     thread stream_thread_;
     mutex lock_;
 
-    /**
-     * Opens new socket and connects to server on provided port.
-     */
+    /// Opens new socket and connects to server on provided port.
     int connectSocket(string host, int port);
 
     /**
-     * Starts a blocking recv loop through which a client is notified about game state changes.
+     * \brief Starts a blocking recv loop through which a client is notified about game state changes.
      * Listeners for events can be registered with GameClient::addListener method.
      */
     void stream(string host, int port);
 
-    /**
-     * Sends a request to game server through provided socket.
-     */
+    /// Sends a request to game server through provided socket.
     void sendRequest(string req, int socket);
 
-    /**
-     * Receives a response from the server through provided socket.
-     */
+    /// Receives a response from the server through provided socket.
     bool receiveResponse(string & res, int socket);
 
     /// Sends a request to game server through API socket and receives a response. The call is thread-safe.

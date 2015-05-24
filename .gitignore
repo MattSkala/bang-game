@@ -2,3 +2,4 @@
 skalamat
 *.dSYM
 CMakeLists.txt
+doc

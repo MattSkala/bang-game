@@ -21,7 +21,7 @@ int BeerCard::play(Game *game, Player *player, int position, int target, int tar
 
     if (target_others_) {
         for (Player * item : game->getPlayers()) {
-            if (item != player) {
+            if (item != player && item->isAlive()) {
                 item->increaseLife();
             }
         }

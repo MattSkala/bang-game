@@ -73,6 +73,9 @@ public:
     /// Gets pending players.
     vector<Player *> getPendingPlayers();
 
+    /// Gets opponents for target player.
+    vector<Player *> getOpponents(Player * player);
+
     /// Gets number of bots.
     int getBotsCount() const;
 
