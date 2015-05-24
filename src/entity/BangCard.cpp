@@ -11,7 +11,7 @@ int BangCard::play(Game *game, Player *player, int position, int target, int tar
 
     if (target_distance_) {
         Player *target_player = game->getPlayers()[target];
-        if (target_player == player) {
+        if (target_player == player || !target_player->isAlive()) {
             return Game::ERROR_INVALID_TARGET;
         }
 
@@ -37,7 +37,7 @@ int BangCard::play(Game *game, Player *player, int position, int target, int tar
         // Gatling
         game->setPendingCard(this);
         for (Player *p : game->getPlayers()) {
-            if (p != player) {
+            if (p != player && p->isAlive()) {
                 p->setPending(true);
             }
         }

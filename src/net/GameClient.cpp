@@ -252,7 +252,10 @@ int GameClient::playCard(int position, int target, int target_card) {
     return stoi(res);
 }
 
-bool GameClient::proceed() {
+int GameClient::proceed() {
     string res;
-    return sendRequest("PROCEED", res) && res == GameServer::SUCCESS;
+    if (!sendRequest("PROCEED", res)) {
+        return Game::ERROR_UNKNOWN;
+    }
+    return stoi(res);
 }

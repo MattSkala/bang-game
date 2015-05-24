@@ -139,15 +139,18 @@ void BootstrapController::actionHostGame() {
             if (toupper(c) == 'A') {
                 actionAddBot();
             } else if (toupper(c) == 'S') {
-                actionStartGame();
-                break;
+                if (actionStartGame()) {
+                    break;
+                }
             }
         }
     }
 }
 
 void BootstrapController::actionAddBot() {
-    client_.addBot();
+    if (!client_.addBot()) {
+        renderPlayersList();
+    }
 }
 
 void BootstrapController::actionJoinGame() {
@@ -188,15 +191,17 @@ void BootstrapController::actionJoinGame() {
     }
 }
 
-void BootstrapController::actionStartGame() {
+bool BootstrapController::actionStartGame() {
     if (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
         cout << "Pro spuštění hry je potřeba " << GameServer::MIN_PLAYERS << " – " << GameServer::MAX_PLAYERS << " hráčů." << endl;
-        while (game_.getPlayers().size() < GameServer::MIN_PLAYERS || game_.getPlayers().size() > GameServer::MAX_PLAYERS) {
-            string s;
-            getline(cin, s);
-        }
+        string s;
+        getline(cin, s);
+        renderPlayersList();
+        return false;
     }
 
     client_.removeListener(listener_);
     client_.startGame();
+
+    return true;
 }

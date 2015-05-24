@@ -29,7 +29,7 @@ public:
     void actionHostGame();
     void actionAddBot();
     void actionJoinGame();
-    void actionStartGame();
+    bool actionStartGame();
 };
 
 

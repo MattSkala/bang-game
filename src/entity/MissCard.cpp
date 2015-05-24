@@ -10,7 +10,7 @@ int MissCard::play(Game *game, Player *player, int position, int target, int tar
 
     player->setPending(false);
 
-    if (game->getPendingPlayersCount() == 0) {
+    if (game->getPendingPlayers().size() == 0) {
         game->setPendingCard(nullptr);
     }
 

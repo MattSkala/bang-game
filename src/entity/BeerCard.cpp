@@ -13,6 +13,9 @@ int BeerCard::play(Game *game, Player *player, int position, int target, int tar
     }
 
     if (target_self_) {
+        if (player->getLife() == player->getMaxLife()) {
+            return Game::ERROR_BEER_NO_EFFECT;
+        }
         player->increaseLife();
     }
 
@@ -29,8 +32,8 @@ int BeerCard::play(Game *game, Player *player, int position, int target, int tar
     if (player->isPending()) {
         player->setPending(false);
 
-        if (game->getPendingPlayersCount() == 0) {
-            game->setPendingCard(nullptr);
+        if (game->getPendingPlayers().size() == 0) {
+            game->setPendingCard(NULL);
         }
     }
 

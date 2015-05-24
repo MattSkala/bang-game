@@ -3,7 +3,9 @@
 
 
 #include <map>
+#include <thread>
 #include "../Game.h"
+#include "../entity/Bot.h"
 
 
 /// A game server which runs on host computer in a separate process.
@@ -20,10 +22,10 @@
  * START | OK | Starts the game.
  * GET_CARDS | originalname1;originalname2;... | Returns a list of cards in hand.
  * GET_PERMANENT_CARDS | username1:originalname1,originalname2;... | Returns lists of laid permanent cards.
- * PLAY_CARD\|position\|target\|target_card | OK | Plays a card from hand with optional target.
+ * PLAY_CARD\|position\|target\|target_card | code | Plays a card from hand with optional target.
  * DISCARD_CARD\|position | OK |  Discards a card from hand.
  * FINISH_ROUND | OK | Finishes current round.
- * PROCEED | OK | Does not reply to pending card.
+ * PROCEED | code | Does not reply to pending card.
  *
  *
  * \section Stream Events
@@ -85,6 +87,11 @@ private:
     map<int, Player*> players_;
 
     /**
+     * A thread for running AI.
+     */
+    thread * bot_thread_;
+
+    /**
      * Gets address info for localhost and server port.
      */
     struct addrinfo * getServerInfo();
@@ -110,6 +117,10 @@ private:
      * Sends an event notification to all connected clients.
      */
     void sendEvent(string event);
+
+    void startBot(Bot * bot);
+
+    void handleBot(Bot * bot);
 public:
     GameServer(Game & game);
 
@@ -123,7 +134,7 @@ public:
     /**
      * Min count of players that should be connected before starting a game.
      */
-    static const int MIN_PLAYERS = 2;
+    static const int MIN_PLAYERS = 4;
 
     /**
      * Max count of players that are able to join the game.
@@ -131,7 +142,7 @@ public:
     static const int MAX_PLAYERS = 7;
 
     /**
-     * The response that is returned by server on response-less request.
+     * The response that is returned by server on successful response-less request.
      */
     static const string SUCCESS;
 
@@ -141,19 +152,19 @@ public:
     static const string ERROR;
 
     /**
-     * The response is returned when joining with duplicate name.
+     * Joining with duplicate name.
      */
     static const string ERROR_JOIN_NAME;
 
     /**
-     * The response is returned when joining when the game already started.
+     * Joining when the game already started.
      */
     static const string ERROR_JOIN_PLAYING;
 
     /**
-     * The response is returned when player is dead, but can be healed by beer.
+     * Bot limit is reached.
      */
-    static const string ERROR_BEER_AVAILABLE;
+    static const string ERROR_BOT_LIMIT;
 
     /// Starts the game server.
     /**
@@ -161,6 +172,12 @@ public:
      * The server listens on port GameServer::PORT and automatically accepts incoming connections.
      */
     void start();
+
+    string playCard(Player * player, int position, int target, int target_card);
+
+    string proceed(Player * player);
+
+    string finishRound();
 
     /// Stops the game server.
     void stop();

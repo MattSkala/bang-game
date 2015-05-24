@@ -12,6 +12,10 @@ int DiscardCard::play(Game *game, Player *player, int position, int target, int 
 
     Player * target_player = game->getPlayers()[target];
 
+    if (target_player == player || !target_player->isAlive()) {
+        return Game::ERROR_INVALID_TARGET;
+    }
+
     if (target_card >= 0) {
         auto & cards = target_player->getPermanentCards();
         if (target_card >= (int) cards.size()) {

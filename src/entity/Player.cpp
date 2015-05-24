@@ -1,11 +1,13 @@
 #include <iostream>
 #include "Player.h"
 #include "GunCard.h"
+#include "BeerCard.h"
 
 using namespace std;
 
-Player::Player() {
-}
+Player::Player() { }
+
+Player::~Player() { }
 
 void Player::setName(std::string name) {
     name_ = name;
@@ -60,7 +62,7 @@ vector<shared_ptr<PlayableCard>>& Player::getCards() {
 bool Player::hasBeerCard() const {
     bool has = false;
     for (auto & card : cards_) {
-        if (card->getOriginalName() == "Birra") {
+        if (dynamic_pointer_cast<BeerCard>(card)) {
             has = true;
         }
     }

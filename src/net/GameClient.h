@@ -125,7 +125,7 @@ public:
     int playCard(int position, int target = -1, int target_card = -1);
 
     /// Does not reply to pending card.
-    bool proceed();
+    int proceed();
 
     ///@}
 };

@@ -38,6 +38,8 @@ private:
 public:
     Player();
 
+    virtual ~Player();
+
     /**
      * Sets player name.
      */

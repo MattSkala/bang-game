@@ -15,6 +15,11 @@ int DrawCard::play(Game *game, Player *player, int position, int target, int tar
         // Draw a card from another player
         if ((target_distance_ && game->getDistance(player, target) == 1) || target_any_) {
             Player *target_player = game->getPlayers()[target];
+
+            if (target_player == player || !target_player->isAlive()) {
+                return Game::ERROR_INVALID_TARGET;
+            }
+
             if (target_card >= 0) {
                 // Draw laid permanent card
                 auto & cards = target_player->getPermanentCards();
@@ -25,6 +30,10 @@ int DrawCard::play(Game *game, Player *player, int position, int target, int tar
                 cards.erase(cards.begin() + target_card);
             } else {
                 // Draw random card from hand
+                if (target_player->getCards().size() == 0) {
+                    return Game::ERROR_TARGET_NO_CARDS;
+                }
+
                 target_card = rand() % (int) target_player->getCards().size();
                 auto & cards = target_player->getCards();
                 player->addCard(cards[target_card]);

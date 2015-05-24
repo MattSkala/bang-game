@@ -18,7 +18,7 @@ void GameController::updatePlayersInfo() {
         state_ = STATE_GAME_OVER;
     } else if (game_.getMe()->isPending()) {
         state_ = STATE_PENDING;
-    } else if (game_.getPlayerOnTurn() == game_.getMe() && game_.getPendingPlayersCount() == 0) {
+    } else if (game_.getPlayerOnTurn() == game_.getMe() && game_.getPendingPlayers().size() == 0) {
         state_ = STATE_ON_TURN;
     } else {
         state_ = STATE_WAIT;
@@ -144,8 +144,9 @@ void GameController::initInputHandler() {
                     state_ = STATE_PLAY_CARD;
                     renderBoard();
                 } else if (toupper(c) == 'P') {
-                    state_ = STATE_WAIT;
-                    if (!client_.proceed()) {
+                    if ((error_ = client_.proceed()) == Game::SUCCESS) {
+                        state_ = STATE_WAIT;
+                    } else {
                         renderBoard();
                     }
                 }

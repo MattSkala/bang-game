@@ -15,6 +15,7 @@
 #include <string.h>
 #include "../Exception.h"
 #include "../util/utils.h"
+#include "../entity/Bot.h"
 #include "GameServer.h"
 
 #define BUFFER_SIZE 1024
@@ -23,7 +24,7 @@ const string GameServer::SUCCESS = "OK";
 const string GameServer::ERROR = "ERROR";
 const string GameServer::ERROR_JOIN_NAME = "JOIN_NAME";
 const string GameServer::ERROR_JOIN_PLAYING = "JOIN_PLAYING";
-const string GameServer::ERROR_BEER_AVAILABLE = "BEER_AVAILABLE";
+const string GameServer::ERROR_BOT_LIMIT = "BOT_LIMIT";
 
 const string GameServer::ERROR_ALREADY_RUNNING = "ALREADY_RUNNING";
 const string GameServer::ERROR_NOT_RUNNING = "NOT_RUNNING";
@@ -223,6 +224,21 @@ string GameServer::processRequest(string req, int connection) {
             sendEvent("JOIN|" + args[1]);
             res = GameServer::SUCCESS;
         }
+    } else if ("ADD_BOT" == args[0]) {
+        if (game_.getBotsCount() >= 2) {
+            res = GameServer::ERROR_BOT_LIMIT;
+        } else {
+            // add bot
+            player = new Bot();
+            int names_size = 6;
+            string names[6] = {"Bill", "Frank", "Jim", "Annie", "Jeff", "Will"};
+            do {
+                player->setName(names[rand() % names_size]);
+            } while (game_.getPlayer(player->getName()) != NULL);
+            game_.addPlayer(player);
+            sendEvent("JOIN|" + player->getName());
+            res = GameServer::SUCCESS;
+        }
     } else if ("GET_PLAYERS" == req) {
         res = "";
         vector<Player *> players = game_.getPlayers();
@@ -297,23 +313,7 @@ string GameServer::processRequest(string req, int connection) {
             }
         }
     } else if ("FINISH_ROUND" == req) {
-        auto winners = game_.getWinners();
-        if (winners.size() > 0) {
-            string roles;
-            for (unsigned int i = 0; i < winners.size(); i++) {
-                roles += winners[i];
-                if (i < winners.size() - 1) {
-                    roles += ";";
-                }
-            }
-            sendEvent("GAME_OVER|" + roles);
-        } else {
-            game_.finishRound();
-            game_.drawCard(game_.getPlayerOnTurn());
-            game_.drawCard(game_.getPlayerOnTurn());
-            sendEvent("NEXT_ROUND");
-        }
-        res = GameServer::SUCCESS;
+        res = finishRound();
     } else if ("DISCARD_CARD" == args[0]) {
         int position = stoi(args[1]);
         game_.discardCard(player, position);
@@ -322,33 +322,89 @@ string GameServer::processRequest(string req, int connection) {
         int position = stoi(args[1]);
         int target = stoi(args[2]);
         int target_card = stoi(args[3]);
-        string card_name = player->getCards()[position]->getOriginalName();
-        int status = game_.playCard(player, position, target, target_card);
-        res = to_string(status);
-        if (status == Game::SUCCESS) {
-            sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target) + "|" + to_string(target_card));
-        }
+        res = playCard(player, position, target, target_card);
     } else if ("PROCEED" == args[0]) {
-        if (player->getLife() > 0) {
-            game_.proceed(player);
-            sendEvent("PROCEED|" + player->getName());
-            res = GameServer::SUCCESS;
-
-            if (player->getLife() <= 0 && player->hasBeerCard()) {
-                player->setPending(true);
-            }
-        } else {
-            if (player->hasBeerCard()) {
-                res = GameServer::ERROR_BEER_AVAILABLE;
-            } else {
-                res = GameServer::ERROR;
-            }
-        }
+        res = proceed(player);
     } else {
         res = "INVALID_REQUEST";
     }
 
     return res;
+}
+
+void GameServer::startBot(Bot * bot) {
+    thread bot_thread = thread(&GameServer::handleBot, this, bot);
+    bot_thread.detach();
+}
+
+void GameServer::handleBot(Bot * bot) {
+    if (bot->isPending()) {
+        bot->reply(this, &game_);
+    } else if (game_.getPlayerOnTurn() == bot) {
+        bot->play(this, &game_);
+        finishRound();
+    }
+}
+
+string GameServer::playCard(Player * player, int position, int target, int target_card) {
+    string card_name = player->getCards()[position]->getOriginalName();
+    int status = game_.playCard(player, position, target, target_card);
+    string res = to_string(status);
+    if (status == Game::SUCCESS) {
+        sendEvent("PLAY_CARD|" + player->getName() + "|" + card_name + "|" + to_string(target) + "|" + to_string(target_card));
+    }
+    for (Player * player : game_.getPendingPlayers()) {
+        Bot * bot = dynamic_cast<Bot *>(player);
+        if (bot) {
+            startBot(bot);
+        }
+    }
+    return res;
+}
+
+string GameServer::proceed(Player * player) {
+    string res;
+    if (player->getLife() > 0) {
+        game_.proceed(player);
+        sendEvent("PROCEED|" + player->getName());
+        res = to_string(Game::SUCCESS);
+
+        if (player->getLife() <= 0 && player->hasBeerCard()) {
+            player->setPending(true);
+        }
+    } else {
+        if (player->hasBeerCard()) {
+            res = to_string(Game::ERROR_BEER_AVAILABLE);
+        } else {
+            res = to_string(Game::ERROR_UNKNOWN);
+        }
+    }
+    return res;
+}
+
+string GameServer::finishRound() {
+    auto winners = game_.getWinners();
+    if (winners.size() > 0) {
+        string roles;
+        for (unsigned int i = 0; i < winners.size(); i++) {
+            roles += winners[i];
+            if (i < winners.size() - 1) {
+                roles += ";";
+            }
+        }
+        sendEvent("GAME_OVER|" + roles);
+    } else {
+        game_.finishRound();
+        game_.drawCard(game_.getPlayerOnTurn());
+        game_.drawCard(game_.getPlayerOnTurn());
+        sendEvent("NEXT_ROUND");
+
+        Bot * bot = dynamic_cast<Bot *>(game_.getPlayerOnTurn());
+        if (bot) {
+            startBot(bot);
+        }
+    }
+    return GameServer::SUCCESS;
 }
 
 void GameServer::sendResponse(int client_socket, string res) {

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "Game.h"
+#include "entity/Bot.h"
 #include "net/GameServer.h"
 
 using namespace std;
@@ -31,14 +32,24 @@ vector<Player *>& Game::getPlayers() {
     return players_;
 }
 
-int Game::getPendingPlayersCount() const {
-    int pending = 0;
+vector<Player *> Game::getPendingPlayers() {
+    vector<Player *> pending;
     for (Player *item : players_) {
         if (item->isPending()) {
-            pending++;
+            pending.push_back(item);
         }
     }
     return pending;
+}
+
+int Game::getBotsCount() const {
+    int count = 0;
+    for (auto & player : players_) {
+        if (dynamic_cast<Bot *>(player)) {
+            count++;
+        }
+    }
+    return count;
 }
 
 void Game::setPack(vector<Card *> cards) {
@@ -82,7 +93,10 @@ void Game::assignRoles() {
     srand((unsigned int) time(0));
 
     // 1 sheriff
-    int sheriff_position = rand() % (int) players_.size();
+    int sheriff_position;
+    do {
+        sheriff_position = rand() % (int) players_.size();
+    } while (dynamic_cast<Bot *>(players_[sheriff_position]));
     players_[sheriff_position]->setRole(sheriff);
 
     // 1 renegate
@@ -90,7 +104,7 @@ void Game::assignRoles() {
         int renegate_position;
         do {
             renegate_position = rand() % (int) players_.size();
-        } while (renegate_position == sheriff_position);
+        } while (renegate_position == sheriff_position || dynamic_cast<Bot *>(players_[renegate_position]));
         players_[renegate_position]->setRole(renegate);
     }
 
@@ -100,7 +114,7 @@ void Game::assignRoles() {
     if (players_.size() >= 7) deputies++;
     while (deputies > 0) {
         int deputy_position = rand() % (int) players_.size();
-        if (players_[deputy_position]->getRole() == NULL) {
+        if (players_[deputy_position]->getRole() == NULL && !dynamic_cast<Bot *>(players_[deputy_position])) {
             players_[deputy_position]->setRole(deputy);
             deputies--;
         }
@@ -409,7 +423,7 @@ void Game::proceed(Player *player) {
     pending_card_->proceed(this, player);
     player->setPending(false);
 
-    if (getPendingPlayersCount() == 0) {
+    if (getPendingPlayers().size() == 0) {
         pending_card_ = NULL;
     }
 }
@@ -434,9 +448,34 @@ string Game::getErrorMessage(int code) {
             return "Tuto kartu lze zahrát pouze jako reakci na útok.";
         case ERROR_INVALID_REACTION:
             return "Nyní lze zahrát pouze kartu Vedle.";
+        case ERROR_BEER_NO_EFFECT:
+            return "Máš plný počet životů.";
+        case ERROR_BEER_AVAILABLE:
+            return "Můžeš vypít Pivo pro zvýšení života.";
         case ERROR_UNKNOWN_CARD:
             return "Neplatná definice karty.";
         default:
             return "Nastala neznámá chyba.";
     }
+}
+
+int Game::computeUtility(Player * player) const {
+    int utility = 0;
+
+    utility += player->getLife() * 10;
+    utility += (int) player->getPermanentCards().size() * 5;
+    utility += (int) player->getCards().size();
+
+    return utility;
+}
+
+Game Game::clone() const {
+    Game state(*this);
+
+    auto & players = state.getPlayers();
+    for (unsigned int i = 0; i < players.size(); i++) {
+        players[i] = new Player(*players[i]);
+    }
+
+    return state;
 }
