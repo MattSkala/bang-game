@@ -1,5 +1,5 @@
 #include "../src/util/CsvParser.h"
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <iostream>
 

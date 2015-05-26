@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string>
+#include <iostream>
+#include <cassert>
+
+using namespace std;
 
 void testGameServer() {
     int pid = fork();

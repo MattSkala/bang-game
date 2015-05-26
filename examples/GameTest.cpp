@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <string>
 #include <iostream>
+#include <cassert>
 #include "../src/Game.h"
 #include "../src/entity/PermanentCard.h"
 #include "../src/entity/GunCard.h"

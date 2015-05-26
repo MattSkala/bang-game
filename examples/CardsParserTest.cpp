@@ -1,3 +1,4 @@
+#include <cassert>
 #include "../src/util/CardsParser.h"
 #include "../src/entity/Card.h"
 #include "../src/entity/RoleCard.h"

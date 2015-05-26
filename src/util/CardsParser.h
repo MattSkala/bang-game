@@ -2,6 +2,7 @@
 #define BANG_CARDSPARSER_H
 
 
+#include <vector>
 #include "../entity/Card.h"
 
 
