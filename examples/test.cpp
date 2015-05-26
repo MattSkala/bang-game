@@ -5,7 +5,6 @@
 #include "GameServerTest.cpp"
 #include "GameTest.cpp"
 
-
 int main(int argc, char * argv[]) {
     clock_t begin = clock();
 

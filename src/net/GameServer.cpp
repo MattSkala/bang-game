@@ -71,7 +71,7 @@ void GameServer::start() {
         throw Exception(ERROR_ALREADY_RUNNING, "Server is already running.");
     }
 
-    struct addrinfo * servinfo = getServerInfo();
+    struct addrinfo *servinfo = getServerInfo();
     socket_ = getSocket(servinfo);
 
     // Allow reusing address to prevent "Address already in use" error

@@ -112,8 +112,12 @@ void BootstrapController::actionHostGame() {
     // Start game server in a child process
     server_pid_ = fork();
     if (server_pid_ == 0) {
-        GameServer server = GameServer(game_);
-        server.start();
+        try {
+            GameServer server = GameServer(game_);
+            server.start();
+        } catch (Exception e) {
+            cerr << e.getName() << ": " << e.getMessage() << endl;
+        }
         exit(0);
     }
 

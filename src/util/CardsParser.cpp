@@ -21,7 +21,7 @@ using namespace std;
 
 vector<Card *> CardsParser::parseFile(string filename) {
     CsvParser parser;
-    vector< vector<string> > data = parser.parseFile(filename, true);
+    vector< vector<string> > data = parser.parseFile(filename, ',', true);
 
     vector<Card *> cards;
     for (vector<string>& row : data) {

@@ -1,5 +1,5 @@
-*.out
 skalamat
+test.out
 *.dSYM
 CMakeLists.txt
 doc

@@ -7,12 +7,12 @@ using namespace std;
 
 void testCsvParser() {
     try {
-        CsvParser().parseFile("not-existing-file.csv", true);
+        CsvParser().parseFile("not-existing-file.csv", ',', true);
     } catch (const char * ex) {
         assert(strcmp(ex, "cannot open file") == 0);
     }
 
-    vector< vector<string> > data = CsvParser().parseFile("res/cards.csv", true);
+    vector< vector<string> > data = CsvParser().parseFile("res/cards.csv", ',', true);
     assert(data.size() == 42);
     assert(data[0][0] == "Sceriffo");
     assert(data[0][1] == "Šerif");

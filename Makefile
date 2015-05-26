@@ -1,5 +1,5 @@
 OUTPUT=skalamat
-TEST_OUTPUT=test
+TEST_OUTPUT=test.out
 BIN_DIR=bin
 
 CXX=g++
@@ -39,16 +39,16 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 compile: $(BIN_DIR) $(OBJECTS) $(BIN_DIR)/main.o
-	$(LD) -o $(OUTPUT) $(OBJECTS) $(BIN_DIR)/main.o
+	$(LD) $(CFLAGS) -o $(OUTPUT) $(OBJECTS) $(BIN_DIR)/main.o
 
 run:
 	./$(OUTPUT) res/cards.csv
 
 compileTest: $(BIN_DIR) $(OBJECTS) $(BIN_DIR)/test.o
-	$(LD) -o $(TEST_OUTPUT) $(OBJECTS) $(BIN_DIR)/test.o
+	$(LD) $(CFLAGS) -o $(TEST_OUTPUT) $(OBJECTS) $(BIN_DIR)/test.o
 
 runTest:
-	./test
+	./$(TEST_OUTPUT)
 
 test: compileTest runTest
 

@@ -2,7 +2,7 @@
 #include "CsvParser.h"
 
 
-vector<vector<string>> CsvParser::parseFile(string filename, bool ignore_first_line) {
+vector<vector<string>> CsvParser::parseFile(string filename, char separator, bool ignore_first_line) {
     vector<vector<string> > data;
 
     // open file
@@ -20,7 +20,7 @@ vector<vector<string>> CsvParser::parseFile(string filename, bool ignore_first_l
     }
 
     while (getline(in, line)) {
-        vector<string> row = parseRow(line);
+        vector<string> row = parseRow(line, separator);
         data.push_back(row);
     };
 
@@ -29,10 +29,9 @@ vector<vector<string>> CsvParser::parseFile(string filename, bool ignore_first_l
     return data;
 }
 
-vector<string> CsvParser::parseRow(string line) {
+vector<string> CsvParser::parseRow(string line, char separator) {
     vector<string> row;
 
-    char separator = ';';
     string cell;
 
     for (unsigned int i = 0; i < line.size(); i++) {
